@@ -11,31 +11,82 @@
 <body>
 
 <div id="vueApp">
-    <div class="topBtns">
-    <input v-model="newItem" type="text" placeholder="Write shopping item here">
-    <button @click="addItem">Add to List</button>
-    </div>
-        <ul class=listView>
-            <li v-for="(item, i) in shoppingList" :key="i">{{ item }}</li>
-        </ul>
-    <button @click="clearList">Delete List</button>
+    <!-- NAV -->
+    <nav class="navbar">
+        <div class="logo">WOO</div>
+        <input class="search-bar" placeholder="Search..." />
+        <div class="nav-links">
+            <span>Home</span>
+            <span>Upcoming</span>
+            <span>Watchlist</span>
+            <span>Profile</span>
+        </div>
+    </nav>
+
+    <!-- GAME HEADER -->
+    <section class="game-header">
+        <div class="game-media">
+            <img class="game-cover" src="xxx" alt="Game cover" />
+
+            <div class="reviews">
+                <div class="stars">★★★★★</div>
+                <div class="review-count">(1,284 reviews)</div>
+                <a href="#">Read reviews</a>
+            </div>
+        </div>
+
+        <div class="game-info">
+            <h1>Game titel</h1>
+
+            <div class="tags">
+                <span class="tag">Tag1</span>
+                <span class="tag">Tag2</span>
+                <span class="tag">tag3</span>
+            </div>
+
+            <p class="description">
+                placeholder text here
+            </p>
+        </div>
+
+        <div class="price-card">
+            <div class="price">3 €</div>
+            <small>Tekst go here</small>
+        </div>
+    </section>
+
+    <!-- LOWER SECTION -->
+    <section class="game-header">
+        <div class="card similar-games">
+            <h3>Similar games</h3>
+            <img src="xxx" />
+            <p>Placeholder here</p>
+        </div>
+
+        <div class="chart-container">
+            <h3>Price history</h3>
+            <div style="height: 200px; opacity: 0.4">
+                (Chart placeholder)
+            </div>
+        </div>
+    </section>
 </div>
 
-
 <script>
-    const newObj = Vue.createApp({
-        data() {
-            return {
-                shoppingList: ['snacks','kiwis','world domination'],
-                newItem: ''
-            }
-        },
-        methods: {
-            addItem() {this.shoppingList.push(this.newItem);this.newItem = '';},
-            clearList() {this.shoppingList = [];}
+src="https://unpkg.com/vue@3/dist/vue.global.js"
+const newVueObj = Vue.createApp({
+    data() {
+        return {
+            shoppingList: ['snacks', 'kiwis', 'world domination'],
+            newItem: ''
         }
-    });
-    newObj.mount('#vueApp');
+    },
+    methods: {
+        addItem() { this.shoppingList.push(this.newItem); this.newItem = ''; },
+        clearList() { this.shoppingList = []; }
+    }
+});
+newVueObj.mount('#vueApp');
 </script>
 
 </body>
