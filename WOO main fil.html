@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="shopping List trims.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mistrals Shopping List</title>
+</head>
+<body>
+
+<div id="vueApp">
+    <div class="topBtns">
+    <input v-model="newItem" type="text" placeholder="Write shopping item here">
+    <button @click="addItem">Add to List</button>
+    </div>
+        <ul class=listView>
+            <li v-for="(item, i) in shoppingList" :key="i">{{ item }}</li>
+        </ul>
+    <button @click="clearList">Delete List</button>
+</div>
+
+
+<script>
+    const newObj = Vue.createApp({
+        data() {
+            return {
+                shoppingList: ['snacks','kiwis','world domination'],
+                newItem: ''
+            }
+        },
+        methods: {
+            addItem() {this.shoppingList.push(this.newItem);this.newItem = '';},
+            clearList() {this.shoppingList = [];}
+        }
+    });
+    newObj.mount('#vueApp');
+</script>
+
+</body>
+</html>
