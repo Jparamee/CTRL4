@@ -1,17 +1,16 @@
-export function getGamesByTitle(title) {
-    var requestOptions = {
-        method: "GET",
-        redirect: "follow"
-    }
-
-    return fetch(
-            `https://www.cheapshark.com/api/1.0/games?title=${title}`,
-            requestOptions
-        )
-        .then(response => response.text())
-        .then(result => JSON.parse(result))
-        .catch(error => {
-            console.log("error", error)
-            throw error
-        })
+var requestOptions = {
+    method: "GET",
+    redirect: "follow"
 }
+
+fetch(
+        "https://www.cheapshark.com/api/1.0/games?title=batman",
+        requestOptions
+    )
+    .then(response => response.text())
+    .then(result => {
+        const data = JSON.parse(result)
+        console.log("Games found:", data.length)
+        console.log("First game:", data[0])
+    })
+    .catch(error => console.log("error", error))
