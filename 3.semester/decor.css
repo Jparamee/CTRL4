@@ -49,6 +49,7 @@ body {
   align-items: center;
   gap: 2rem;
   padding: 1.2rem 2rem;
+
 }
 
 .logo {
@@ -75,4 +76,24 @@ body {
 
 .search-bar::placeholder {
   color: var(--text-muted);
+}
+
+/* =========================
+   Titel header
+========================= */
+.game-header {
+  display: grid;
+  grid-template-columns: 260px 1fr 200px;
+  gap: 2rem;
+  padding: 2rem;
+  align-items: start;
+}
+
+/* =========================
+   Img style
+========================= */
+.game-cover {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
 }

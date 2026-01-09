@@ -77,8 +77,14 @@ src="https://unpkg.com/vue@3/dist/vue.global.js"
 const newVueObj = Vue.createApp({
     data() {
         return {
-            shoppingList: ['snacks', 'kiwis', 'world domination'],
-            newItem: ''
+            gameCoverSrc: 'refer to json?', /*since we most likely are receiving a .json file thru api*/
+            gameTitle: '',
+            genreTags: [], /*made as list, since I assume there will be several tags. //Christian */
+            gameDescription: '',
+            price: '',
+            similarGamesList: [],
+            similarGamesCovers: [], /*more covers for the similar games section*/
+            chartData: [] /*don't think one variable will cover this, but here you go. that's your rodeo Jonas. //christian*/
         }
     },
     methods: {
