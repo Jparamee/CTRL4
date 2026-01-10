@@ -26,7 +26,7 @@
     <!-- GAME HEADER -->
     <section class="game-header">
         <div class="game-media">
-            <img class="game-cover" src="xxx" alt="Game cover" />
+            <img class="game-cover" :src="gameCoverSrc" alt="Game cover" />
 
             <div class="reviews">
                 <div class="stars">★★★★★</div>
@@ -36,7 +36,7 @@
         </div>
 
         <div class="game-info">
-            <h1>Game titel</h1>
+            <h1>{{gameTitle}}</h1>
 
             <div class="tags">
                 <span class="tag">Tag1</span>
@@ -72,43 +72,40 @@
     </section>
 </div>
 
-<!-- UPDATE. Can't make separate JS file work. Doesn't seem to connect properly while using Vue.
- So I've inserted it here. Can see in the console that we now are getting feedback. -->
-<script> //API javascript logic, Jonas's code with slight tweaking
-    let requestOptions = {
-        method: "GET",
-        redirect: "follow"}
-
-    fetch( //fetch command. kan det skrives som funktion så man kan søge på siden?
-        "https://www.cheapshark.com/api/1.0/games?title=batman", requestOptions)
-        .then(response => response.text())
-        .then(result => {
-            const data = JSON.parse(result)
-            console.log("Games found:", data.length)
-            console.log("First game:", data[0].external)
-        })
-        .catch(error => console.log("error", error))
-</script>
+<!-- UPDATE. Can't make separate JS file work. Can't fx get feedback from the console.log .-->
 
 <script>
 src="https://unpkg.com/vue@3/dist/vue.global.js"
 const newVueObj = Vue.createApp({
     data() {
         return {
-            gameCoverSrc: 'refer to json?', /*since we most likely are receiving a .json file thru api*/
-            gameTitle: '',
+            gameCoverSrc: '', // having trouble displaying pic
+            gameTitle: 'game title here',
             genreTags: [], /*made as list, since I assume there will be several tags. //Christian */
             gameDescription: '',
             price: '',
             similarGamesList: [],
             similarGamesCovers: [], /*more covers for the similar games section*/
-            chartData: [] /*don't think one variable will cover this, but here you go. that's your rodeo Jonas. //christian*/
+            chartData: [] /*don't think one variable will cover this, but here you go. //christian*/
         }
     },
     methods: {
         addItem() { this.shoppingList.push(this.newItem); this.newItem = ''; },
         clearList() { this.shoppingList = []; }
-    }
+    },
+    created() { // checks data once the API is loaded and component is running.
+    let requestOptions = { //tweaked version of Jonas's API code
+    method: "GET",
+    redirect: "follow"};
+    fetch("https://www.cheapshark.com/api/1.0/games?title=batman")
+        .then(response => response.json())
+        .then(data => {
+            this.gameTitle = data[0].external;
+            this.gameCoverSrc = data[0].thumb;
+        
+        })
+        .catch(error => console.log("error", error));
+},
 });
 newVueObj.mount('#vueApp');
 </script>
