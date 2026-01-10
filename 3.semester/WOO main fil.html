@@ -3,7 +3,7 @@
 <head>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="decor.css">
-    <link rel="javascript" href="noCrashPls.js"></link>
+    <link rel="script" href="API.js"></link>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WOO triple file setup</title>
@@ -71,6 +71,24 @@
         </div>
     </section>
 </div>
+
+<!-- UPDATE. Can't make separate JS file work. Doesn't seem to connect properly while using Vue.
+ So I've inserted it here. Can see in the console that we now are getting feedback. -->
+<script> //API javascript logic, Jonas's code with slight tweaking
+    let requestOptions = {
+        method: "GET",
+        redirect: "follow"}
+
+    fetch( //fetch command. kan det skrives som funktion så man kan søge på siden?
+        "https://www.cheapshark.com/api/1.0/games?title=batman", requestOptions)
+        .then(response => response.text())
+        .then(result => {
+            const data = JSON.parse(result)
+            console.log("Games found:", data.length)
+            console.log("First game:", data[0].external)
+        })
+        .catch(error => console.log("error", error))
+</script>
 
 <script>
 src="https://unpkg.com/vue@3/dist/vue.global.js"

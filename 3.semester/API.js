@@ -14,3 +14,5 @@ fetch(
         console.log("First game:", data[0])
     })
     .catch(error => console.log("error", error))
+
+console.log('testing JS file connection. connection established')
