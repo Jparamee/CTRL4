@@ -2,23 +2,25 @@
    Golbal color ect 
 ========================= */
 :root {
-  --bg-dark: #160036;
-  --bg-main: #2a0b66;
-  --bg-card: rgba(255, 255, 255, 0.06);
+  --bg-dark: #2b2954;
+  --bg-main: #4a4f8f;
+  --bg-card: rgba(255, 255, 255, 0.12);
 
-  --purple-1: #6f3cff;
-  --purple-2: #9b6cff;
+  --purple-1: #7f87ff;
+  --purple-2: #b1b7ff;
 
   --text-main: #ffffff;
-  --text-muted: #b9a8e6;
+  --text-dark:var(--bg-dark)
+  --text-muted: #d6d8ff;
 
-  --border-soft: rgba(255, 255, 255, 0.12);
+  --border-soft: rgba(255, 255, 255, 0.18);
 
-  --radius-lg: 20px;
-  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-md: 16px;
 
-  --blur: blur(14px);
+  --blur: blur(8px);
 }
+
 
 /* =========================
    Global rest 
@@ -28,21 +30,16 @@
 }
 
 body {
-  margin: 0;
-  font-family: "Inter", system-ui, sans-serif;
-  min-height: 100vh;
-
-  background: radial-gradient(
-    150% 120% at 50% 0%,
-    #3b168f 0%,
-    var(--bg-dark) 60%
-  );
+  background: radial-gradient(120% 140% at 50% -20%,
+      #4C4695 0%,
+      #2a0b66 55%,
+      #18162F 100%);
 
   color: var(--text-main);
 }
 
 /* =========================
-   Topbar
+   Topbar rest' 
 ========================= */
 .navbar {
   display: flex;
@@ -101,9 +98,10 @@ body {
    Game info styles 
 ========================= */
 .game-info h1 {
-  font-size: 2.6rem;
-  margin: 0 0 1rem;
+  font-size: 3rem;
+  letter-spacing: -0.02em;
 }
+
 
 .tags {
   display: flex;
@@ -112,11 +110,11 @@ body {
 }
 
 .tag {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--purple-2);
   padding: 0.3rem 0.9rem;
   border-radius: 999px;
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: var(--bg-dark);
 }
 
 .description {
@@ -129,11 +127,9 @@ body {
    Price 😃
 ========================= */
 .price-card {
-  background: linear-gradient(
-    160deg,
-    rgba(155, 108, 255, 0.25),
-    rgba(111, 60, 255, 0.15)
-  );
+  background: linear-gradient(160deg,
+      rgba(155, 108, 255, 0.25),
+      rgba(111, 60, 255, 0.15));
   border-radius: var(--radius-lg);
   padding: 1.5rem;
   text-align: center;
@@ -152,18 +148,17 @@ body {
   color: var(--text-muted);
   margin-top: 0.3rem;
 }
+
 /* =========================
    Section divider
 ========================= */
 .section-divider {
   height: 1px;
   margin: 0 2rem 2rem;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(255, 255, 255, 0.25),
-    transparent
-  );
+  background: linear-gradient(to right,
+      transparent,
+      rgba(255, 255, 255, 0.25),
+      transparent);
 }
 
 /* =========================
@@ -195,6 +190,7 @@ body {
 .reviews a:hover {
   text-decoration: underline;
 }
+
 .game-media {
   display: flex;
   flex-direction: column;
