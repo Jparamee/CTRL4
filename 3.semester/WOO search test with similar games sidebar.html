@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="decor.css">
+    <link rel="script" href="API.js">
+    </link>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOO search test</title>
+</head>
+
+<body>
+
+    <div id="vueApp">
+        <!-- NAV -->
+        <nav class="navbar">
+            <div class="logo">WOO</div>
+            <input v-model="searchInput" class="search-bar" id=searchInput type="text" placeholder="Search..."
+                @keyDown.enter="beginSearch" />
+            <div class="nav-links">
+                <span>Home</span>
+                <span>Upcoming</span>
+                <span>Watchlist</span>
+                <span>Profile</span>
+            </div>
+        </nav>
+
+        <!-- GAME HEADER -->
+        <section class="game-header">
+            <div class="game-media">
+                <img class="game-cover" :src="gameCoverSrc" alt="Game cover" />
+
+                <div class="reviews">
+                    <div class="stars">★★★★★</div>
+                    <div class="review-count">(1,284 reviews)</div>
+                    <a href="#">Read reviews</a>
+                </div>
+            </div>
+
+            <div class="game-info">
+                <h1>{{gameTitle}}</h1>
+                <div class="tags">
+                    <span class="tag">Tag1</span>
+                    <span class="tag">Tag2</span>
+                    <span class="tag">tag3</span>
+                </div>
+                <p class="description">
+                    placeholder text here
+                </p>
+            </div>
+
+            <div class="price-card">
+                <div class="price">{{ price }} €</div>
+                <small>Tekst go here</small>
+            </div>
+        </section>
+
+        <!-- LOWER SECTION -->
+        <section class="game-header">
+            <div class="card similar-games">
+                <h3>Similar games</h3>
+                <div v-for="data in similarGamesList" :key="data.gameID" class="similar-item">
+                    <img :src="data.thumb" alt="Similar game cover" width="80" />
+                    <p>{{ data.external }}</p>
+                </div>
+
+                <div class="chart-container">
+                    <h3>Price history</h3>
+                    <div style="height: 200px; opacity: 0.4">
+                        (Chart placeholder)
+                    </div>
+                </div>
+        </section>
+    </div>
+
+    <script>
+        src = "https://unpkg.com/vue@3/dist/vue.global.js"
+        const newVueObj = Vue.createApp({
+            data() {
+                return { //
+                    searchInput: '', //var for the api search keyword. only used on Enter. //christian
+                    gameCoverSrc: '', // holder for game cover img
+                    gameTitle: 'game title here',
+                    genreTags: [], /*made as list, since I assume there will be several tags. //Christian */
+                    gameDescription: '',
+                    price: '',
+                    similarGamesList: [], // currently similar games only shows other games which turned up in the search? not necessarily similar.
+                    similarGamesCovers: [], /*more covers for the similar games section*/
+                    chartData: [] /*don't think one variable will cover this, but here you go. //christian*/
+                }
+            },
+            methods: {
+                beginSearch() { //function called once the user presses Enter in the search field
+                    console.log("Search input for the api was: " + this.searchInput);
+                    let requestOptions = {
+                        method: "GET",
+                        redirect: "follow"
+                    };
+                    fetch("https://www.cheapshark.com/api/1.0/games?title=" + this.searchInput)
+                        .then(response => response.json())
+                        .then(data => {
+                            this.gameTitle = data[0].external;
+                            this.gameCoverSrc = data[0].thumb;
+                            this.price = data[0].cheapest
+                            this.similarGamesList = data.slice(1,4)
+                        })
+                        .catch(error => console.log("error", error)); //end of search function. last line is an error handler
+                        console.log("Similar games:"+ this.similarGamesList)
+                }
+            },
+        });
+        newVueObj.mount('#vueApp');
+    </script>
+
+</body>
+
+</html>
