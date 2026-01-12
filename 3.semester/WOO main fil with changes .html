@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="decor.css">
+    <link rel="script" href="API.js"></link>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOO triple file setup</title>
+</head>
+<body>
+
+<div id="vueApp">
+    <!-- NAV -->
+    <nav class="navbar">
+        <div class="logo">WOO</div>
+        <input class="search-bar" placeholder="Search..." />
+        <div class="nav-links">
+            <span>Home</span>
+            <span>Upcoming</span>
+            <span>Watchlist</span>
+            <span>Profile</span>
+        </div>
+    </nav>
+
+    <!-- GAME HEADER -->
+    <section class="game-header">
+        <div class="game-media">
+            <img class="game-cover" :src="gameCoverSrc" alt="Game cover" />
+
+            <div class="reviews">
+                <div class="stars">★★★★★</div>
+                <div class="review-count">(1,284 reviews)</div>
+                <a href="#">Read reviews</a>
+            </div>
+        </div>
+
+        <div class="game-info">
+            <h1>{{gameTitle}}</h1>
+
+            <div class="tags">
+                <span class="tag">Tag1</span>
+                <span class="tag">Tag2</span>
+                <span class="tag">tag3</span>
+            </div>
+
+            <p class="description">
+                placeholder text here
+            </p>
+        </div>
+
+        <div class="price-card">
+        <div class="price">{{ price }} €</div>
+        <small>Tekst go here</small>
+        </div>
+    </section>
+
+    <!-- LOWER SECTION -->
+    <section class="game-header">
+        <div class="card similar-games">
+            <h3>Similar games</h3>
+            <div v-for="game in similarGamesList" :key="game.gameID" class="similar-item">
+            <img :src="game.thumb" alt="Similar game cover" width="80" />
+            <p>{{ game.external }}</p>
+
+        </div>
+
+        <div class="chart-container">
+            <h3>Price history</h3>
+            <div style="height: 200px; opacity: 0.4">
+                (Chart placeholder)
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- UPDATE. Can't make separate JS file work. Can't fx get feedback from the console.log .-->
+
+<script>
+const newVueObj = Vue.createApp({
+    data() {
+        return {
+            games: [], 
+            selectedIndex: null, 
+            
+            gameCoverSrc: '', // having trouble displaying pic
+            gameTitle: 'game title here',
+            genreTags: [], /*made as list, since I assume there will be several tags. //Christian */
+            gameDescription: '',
+            price: '',
+            similarGamesList: [],
+            similarGamesCovers: [], /*more covers for the similar games section*/
+            chartData: [] /*don't think one variable will cover this, but here you go. //christian*/
+        }
+    },
+    methods: {  
+     pickRandomGame() {
+        if (this.games.length === 0) return
+         const i = Math.floor(Math.random() * this.games.length)
+         this.selectedIndex = i
+        this.applySelectedGameToUI()
+        this.SimilarGames()
+
+  },
+
+     applySelectedGameToUI() {
+       const game = this.games[this.selectedIndex]
+         if (!game) return
+
+        this.gameTitle = game.external
+        this.gameCoverSrc = game.thumb
+        this.price = game.cheapest
+  },
+
+  SimilarGames() {
+      if (this.selectedIndex === null) return
+
+      const pickedGame = this.games[this.selectedIndex]
+      if (!pickedGame) return
+
+      this.similarGamesList = this.games
+        .filter(game => game.gameID !== pickedGame.gameID)
+        .slice(0, 3)
+        console.log("Similar games:", this.similarGamesList)
+
+    }
+    },
+
+    created() { // checks data once the API is loaded and component is running.
+    let requestOptions = { //tweaked version of Jonas's API code
+    method: "GET",
+    redirect: "follow"}
+   
+    fetch("https://www.cheapshark.com/api/1.0/games?title=batman",requestOptions)
+        .then(response => response.json())
+        .then(data => {
+            this.games = data 
+            this.pickRandomGame()        
+        })
+        .catch(error => console.log("error", error))
+  }
+})  
+
+newVueObj.mount('#vueApp')
+</script>
+
+</body>
+</html>
