@@ -71,7 +71,7 @@
                     (Chart placeholder)
                 </div>
                 <div>
-                    <img :src="storeICON" alt="Store Icon" />
+                    <img v-for="store in stores" :key="store.storeID" :src="store.storeICON" :alt="store.storeName" />
                 </div>
             </div>
         </section>
@@ -82,6 +82,7 @@
         const newVueObj = Vue.createApp({
             data() {
                 return { //
+
                     searchInput: '', //var for the api search keyword. only used on Enter. //christian
                     gameCoverSrc: '', // holder for game cover img 
                     gameTitle: 'game title here',
@@ -147,13 +148,15 @@
                         .then(response => response.json())
                         .then(data => {
                             this.stores = this.storeIDS.map(
-                                    id => data.find(store => store.storeID == id)
-                                )
-                                .map(store => ({
-                                    storeID: store.storeID,
-                                    storeName: store.storeName,
-                                    storeICON: store.images.icon
-                                }));
+                                id => data.find(store => store.storeID == id)
+                            )
+                            let baseURL = "https://www.cheapshark.com";
+
+                            this.stores = this.stores.map(store => ({
+                                storeID: store.storeID,
+                                storeName: store.storeName,
+                                storeICON: baseURL + store.images.icon
+                            }));
                             console.log("Stores info:", this.stores);
                         })
                         .catch(error => console.log("error", error)); //end of search function. last line is an error handler
