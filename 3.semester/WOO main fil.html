@@ -6,7 +6,7 @@
     <link rel="script" href="API.js"></link>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WOO triple file setup</title>
+    <title>WOO main file</title>
 </head>
 <body>
 
@@ -21,16 +21,17 @@
                     <span>Watchlist</span>
                     <span>Profile</span>
                 </div>
-                <input class="search-bar" placeholder="Search..." />
+                <input class="search-bar" placeholder="Search...   🔍"
+                v-model="searchInput" @keyDown.enter="beginSearch"/>
             </div>
         </nav> 
 
     <!-- GAME HEADER -->
     <section class="game-header">
         <div class="game-media">
-            <img class="game-cover" :src="gameCoverSrc" alt="Game cover" />
+            <img class="game-cover" :src="gameCoverSrc" alt="" />
 
-            <div class="reviews">
+            <div v-show="gameFound" class="reviews">
                 <div class="stars">★★★★★</div>
                 <div class="review-count">(1,284 reviews)</div>
                 <a href="#">Read reviews</a>
@@ -40,29 +41,31 @@
         <div class="game-info">
             <h1>{{gameTitle}}</h1>
 
-            <div class="tags">
+            <div v-show="gameFound" class="tags">
                 <span class="tag">Tag1</span>
                 <span class="tag">Tag2</span>
                 <span class="tag">tag3</span>
             </div>
 
-            <p class="description">
-                placeholder text here
+            <p v-show="gameFound" class="description">
+                {{gameDescription}}
             </p>
         </div>
 
-        <div class="price-card">
-            <div class="price">3 €</div>
-            <small>Tekst go here</small>
+        <div v-show="gameFound" class="price-card">
+            <div class="price">{{ price }} €</div>
+            <small>Cheapest offer</small>
         </div>
     </section>
 
     <!-- LOWER SECTION -->
     <section class="game-header">
         <div class="card similar-games">
-            <h3>Similar games</h3>
-            <img src="xxx" />
-            <p>Placeholder here</p>
+            <h3>You might also like...</h3>
+                <div v-for="data in similarGamesList" :key="data.gameID" class="similar-item">
+                    <img :src="data.thumb" alt="Similar game cover" width="80" />
+                    <p>{{ data.external }}</p>
+                </div>
         </div>
 
         <div class="chart-container">
@@ -81,32 +84,44 @@ src="https://unpkg.com/vue@3/dist/vue.global.js"
 const newVueObj = Vue.createApp({
     data() {
         return {
-            gameCoverSrc: '', // having trouble displaying pic
-            gameTitle: 'game title here',
+            searchInput: '', //var for the api search keyword. only used on Enter. //christian
+            gameCoverSrc: '', // holder for game cover img
+            gameTitle: 'Lets find a game!\nType something into the Search bar...',
             genreTags: [], /*made as list, since I assume there will be several tags. //Christian */
-            gameDescription: '',
+            gameFound: false,
+            gameDescription: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
             price: '',
-            similarGamesList: [],
+            similarGamesList: [], // currently similar games only shows other games which turned up in the search? not necessarily similar.                
             similarGamesCovers: [], /*more covers for the similar games section*/
             chartData: [] /*don't think one variable will cover this, but here you go. //christian*/
         }
     },
     methods: {
-        addItem() { this.shoppingList.push(this.newItem); this.newItem = ''; },
-        clearList() { this.shoppingList = []; }
-    },
-    created() { // checks data once the API is loaded and component is running.
-    let requestOptions = { //tweaked version of Jonas's API code
-    method: "GET",
-    redirect: "follow"};
-    fetch("https://www.cheapshark.com/api/1.0/games?title=batman")
-        .then(response => response.json())
-        .then(data => {
-            this.gameTitle = data[0].external;
-            this.gameCoverSrc = data[0].thumb;
-        
-        })
-        .catch(error => console.log("error", error));
+        beginSearch() { //function called once the user presses Enter in the search field
+            console.log("Search input for the api was: " + this.searchInput);
+            let requestOptions = {
+                method: "GET",
+                redirect: "follow"
+            };
+            fetch("https://www.cheapshark.com/api/1.0/games?title=" + this.searchInput)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                    this.gameFound = true //tilføjet så v-show ikke bare viser descript, selvom der ikke er noget spil.
+                    this.gameTitle = data[0].external;
+                    this.gameCoverSrc = data[0].thumb;
+                    this.price = data[0].cheapest
+                    this.similarGamesList = data.slice(1,4)}
+                    else {
+                        this.gameFound = false;
+                        this.gameTitle = 'No games found! Try something else.'
+                        this.gameCoverSrc=''
+                        this.similarGamesList=[]
+                        this.similarGamesCovers=[]};
+                })
+                .catch(error => console.log("error", error)); //end of search function. last line is an error handler
+            console.log("Similar games:"+ this.similarGamesList)
+        }
 },
 });
 newVueObj.mount('#vueApp');
