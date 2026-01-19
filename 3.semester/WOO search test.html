@@ -4,7 +4,6 @@
 <head>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link rel="stylesheet" href="decor.css">
-    <link rel="script" href="API.js"></link>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WOO triple file setup</title>
@@ -71,100 +70,99 @@
                     (Chart placeholder)
                 </div>
                 <div>
-                    <img v-for="store in stores" :key="store.storeID" :src="store.storeICON" :alt="store.storeName" />
-                </div>
-            </div>
+                    <img v-for="store in stores" :key="store.storeID" :src="'https://www.cheapshark.com' + store.images.icon" @load="console.log('loaded', store.storeName)" @error="console.log('FAILED', store.storeName, store.storeICON)" />
         </section>
-    </div>
+        </div>
 
-    <script>
-        src = "https://unpkg.com/vue@3/dist/vue.global.js"
-        const newVueObj = Vue.createApp({
-            data() {
-                return { //
+        <script>
+            src = "https://unpkg.com/vue@3/dist/vue.global.js"
+            const newVueObj = Vue.createApp({
+                data() {
+                    return { //
 
-                    searchInput: '', //var for the api search keyword. only used on Enter. //christian
-                    gameCoverSrc: '', // holder for game cover img 
-                    gameTitle: 'game title here',
-                    genreTags: [],
-                    /*made as list, since I assume there will be several tags. //Christian */
-                    gameDescription: '',
-                    price: '',
-                    similarGamesList: [],
-                    similarGamesCovers: [],
-                    storeIDS: [],
-                    allTimeLow: "",
-                    /*more covers for the similar games section*/
-                    chartData: [] /*don't think one variable will cover this, but here you go. //christian*/
-                }
-            },
-            methods: {
-                async beginSearch() { //function called once the user presses Enter in the search field
-                    console.log("Search input for the api was: " + this.searchInput);
-                    let requestOptions = {
-                        method: "GET",
-                        redirect: "follow"
-                    };
-                    fetch("https://www.cheapshark.com/api/1.0/games?title=" + this.searchInput)
-                        .then(response => response.json())
-                        .then(async(data) => {
-                            console.log(data);
-
-                            this.price = data[0].cheapest;
-                            this.gameTitle = data[0].external;
-                            this.gameCoverSrc = data[0].thumb;
-                            this.gameID = data[0].gameID;
-
-                            await this.helperSearch();
-                        })
-                        .catch(error => console.log("error", error)); //end of search function. last line is an error handler
+                        searchInput: '', //var for the api search keyword. only used on Enter. //christian
+                        gameCoverSrc: '', // holder for game cover img 
+                        gameTitle: 'game title here',
+                        genreTags: [],
+                        /*made as list, since I assume there will be several tags. //Christian */
+                        gameDescription: '',
+                        price: '',
+                        similarGamesList: [],
+                        similarGamesCovers: [],
+                        storeIDS: [],
+                        stores: [],
+                        allTimeLow: "",
+                        /*more covers for the similar games section*/
+                        chartData: [] /*don't think one variable will cover this, but here you go. //christian*/
+                    }
                 },
+                methods: {
+                    async beginSearch() { //function called once the user presses Enter in the search field
+                        console.log("Search input for the api was: " + this.searchInput);
+                        let requestOptions = {
+                            method: "GET",
+                            redirect: "follow"
+                        };
+                        fetch("https://www.cheapshark.com/api/1.0/games?title=" + this.searchInput)
+                            .then(response => response.json())
+                            .then(async(data) => {
+                                console.log(data);
 
-                async helperSearch() { //function called once the user presses Enter in the search field
-                    console.log("gameID:" + this.searchInput);
-                    let requestOptions = {
-                        method: "GET",
-                        redirect: "follow"
-                    };
-                    fetch("https://www.cheapshark.com/api/1.0/games?id=" + this.gameID)
-                        .then(response => response.json())
-                        .then(async(data) => {
-                            console.log(data);
-                            this.storeIDS = data.deals.map(d => d.storeID);
-                            this.allTimeLow = data.cheapestPriceEver.price;
+                                this.price = data[0].cheapest;
+                                this.gameTitle = data[0].external;
+                                this.gameCoverSrc = data[0].thumb;
+                                this.gameID = data[0].gameID;
 
-                            await this.getStoreInformation();
-                        })
-                        .catch(error => console.log("error", error)); //end of search function. last line is an error handler
+                                await this.helperSearch();
+                            })
+                            .catch(error => console.log("error", error)); //end of search function. last line is an error handler
+                    },
+
+                    async helperSearch() { //function called once the user presses Enter in the search field
+                        console.log("gameID:" + this.searchInput);
+                        let requestOptions = {
+                            method: "GET",
+                            redirect: "follow"
+                        };
+                        fetch("https://www.cheapshark.com/api/1.0/games?id=" + this.gameID)
+                            .then(response => response.json())
+                            .then(async(data) => {
+                                console.log(data);
+                                this.storeIDS = data.deals.map(d => d.storeID);
+                                this.allTimeLow = data.cheapestPriceEver.price;
+
+                                await this.getStoreInformation();
+                            })
+                            .catch(error => console.log("error", error)); //end of search function. last line is an error handler
+                    },
+
+                    async getStoreInformation() { //function called once the user presses Enter in the search field
+                        console.log("storeIDs:" + this.storeIDS);
+                        let requestOptions = {
+                            method: "GET",
+                            redirect: "follow"
+                        };
+                        fetch("https://www.cheapshark.com/api/1.0/stores")
+                            .then(response => response.json())
+                            .then(data => {
+                                this.stores = this.storeIDS.map(
+                                    id => data.find(store => store.storeID == id)
+                                )
+                                let baseURL = "https://www.cheapshark.com";
+
+                                this.stores = this.stores.map(store => ({
+                                    storeID: store.storeID,
+                                    storeName: store.storeName,
+                                    storeICON: baseURL + store.images.icon
+                                }));
+                                console.log("Stores info:", this.stores);
+                            })
+                            .catch(error => console.log("error", error)); //end of search function. last line is an error handler
+                    }
                 },
-
-                async getStoreInformation() { //function called once the user presses Enter in the search field
-                    console.log("storeIDs:" + this.storeIDS);
-                    let requestOptions = {
-                        method: "GET",
-                        redirect: "follow"
-                    };
-                    fetch("https://www.cheapshark.com/api/1.0/stores")
-                        .then(response => response.json())
-                        .then(data => {
-                            this.stores = this.storeIDS.map(
-                                id => data.find(store => store.storeID == id)
-                            )
-                            let baseURL = "https://www.cheapshark.com";
-
-                            this.stores = this.stores.map(store => ({
-                                storeID: store.storeID,
-                                storeName: store.storeName,
-                                storeICON: baseURL + store.images.icon
-                            }));
-                            console.log("Stores info:", this.stores);
-                        })
-                        .catch(error => console.log("error", error)); //end of search function. last line is an error handler
-                }
-            },
-        });
-        newVueObj.mount('#vueApp');
-    </script>
+            });
+            newVueObj.mount('#vueApp');
+        </script>
 
 </body>
 
