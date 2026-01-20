@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="decor.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOO triple file setup</title>
+</head>
+<style>
+    .chart-container {
+        width: 100%;
+    }
+    
+    #priceChart {
+        width: 100% !important;
+        max-width: 100%;
+        display: block;
+    }
+</style>
+
+<body>
+    <div id="vueApp">
+        <!-- NAV -->
+        <nav class="navbar">
+            <div class="logo">WOO</div>
+            <input v-model="searchInput" class="search-bar" id="searchInput" type="text" placeholder="Search..." @keydown.enter="beginSearch" />
+            <div class="nav-links">
+                <span>Home</span>
+                <span>Upcoming</span>
+                <span>Watchlist</span>
+                <span>Profile</span>
+            </div>
+        </nav>
+
+        <!-- GAME HEADER -->
+        <section class="game-header">
+            <div class="game-media">
+                <img class="game-cover" :src="gameCoverSrc" alt="Game cover" />
+
+                <div class="reviews">
+                    <div class="stars">★★★★★</div>
+                    <div class="review-count">(1,284 reviews)</div>
+                    <a href="#">Read reviews</a>
+                </div>
+            </div>
+
+            <div class="game-info">
+                <h1>{{gameTitle}}</h1>
+
+                <div class="tags">
+                    <span class="tag">Tag1</span>
+                    <span class="tag">Tag2</span>
+                    <span class="tag">tag3</span>
+                </div>
+
+                <p class="description">
+                    placeholder text here
+                </p>
+            </div>
+
+            <div class="price-card">
+                <div class="price">{{price}}</div>
+                <small>Lowest Price</small>
+            </div>
+        </section>
+
+        <!-- LOWER SECTION -->
+        <section class="game-header">
+            <div class="card similar-games">
+                <h3>Similar games</h3>
+                <img v-for="cover in similarGamesCovers" :key="cover" :src="cover" alt="Similar game cover" />
+                <p>Placeholder here</p>
+            </div>
+
+            <div class="chart-container">
+                <h3>Price history</h3>
+                <div style="height: 200px; opacity: 0.4">
+                    <canvas id="priceChart" height="200"></canvas>
+                </div>
+
+                <div>
+                    <img v-for="store in stores" :key="store.storeID" :src="store.storeICON" @load="console.log('loaded', store.storeName)" @error="console.log('FAILED', store.storeName, store.storeICON)" />
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <script>
+        const newVueObj = Vue.createApp({
+            data() {
+                return {
+                    searchInput: '',
+                    gameCoverSrc: '',
+                    gameTitle: 'game title here',
+                    genreTags: [],
+                    gameDescription: '',
+                    price: '',
+                    gameID: '',
+                    similarGamesList: [],
+                    similarGamesCovers: [],
+                    storeIDS: [],
+                    stores: [],
+                    allTimeLow: "",
+                    chart: null,
+                    chartLabels: [],
+                    chartPrices: [],
+                }
+            },
+            methods: {
+                async beginSearch() {
+                    console.log("Search input for the api was: " + this.searchInput);
+
+                    fetch("https://www.cheapshark.com/api/1.0/games?title=" + this.searchInput)
+                        .then(response => response.json())
+                        .then(async(data) => {
+                            console.log(data);
+
+                            this.price = data[0].cheapest;
+                            this.gameTitle = data[0].external;
+                            this.gameCoverSrc = data[0].thumb;
+                            this.gameID = data[0].gameID;
+                            this.similarGamesCovers = data.slice(1, 6).map(game => game.thumb);
+
+                            await this.helperSearch();
+                        })
+                        .catch(error => console.log("error", error));
+                },
+
+                async helperSearch() {
+                    console.log("gameID:" + this.gameID);
+
+                    fetch("https://www.cheapshark.com/api/1.0/games?id=" + this.gameID)
+                        .then(response => response.json())
+                        .then(async(data) => {
+                            console.log(data);
+
+                            this.storeIDS = data.deals.map(d => d.storeID);
+                            this.showChart();
+
+                            await this.getStoreInformation();
+                        })
+                        .catch(error => console.log("error", error));
+                },
+
+                async getStoreInformation() {
+                    console.log("storeIDs:" + this.storeIDS);
+
+                    fetch("https://www.cheapshark.com/api/1.0/stores")
+                        .then(response => response.json())
+                        .then(data => {
+                            this.stores = this.storeIDS
+                                .map(id => data.find(store => store.storeID == id))
+                                .filter(Boolean);
+
+                            let baseURL = "https://www.cheapshark.com";
+
+                            this.stores = this.stores.map(store => ({
+                                storeID: store.storeID,
+                                storeName: store.storeName,
+                                storeICON: baseURL + (store.images ? store.images.icon : '/images/stores/icon.png')
+                            }));
+
+                            console.log("Stores info:", this.stores);
+                        })
+                        .catch(error => console.log("error", error));
+                },
+
+                showChart() {
+                    const canvas = document.getElementById('priceChart');
+                    if (!canvas) return;
+
+                    const ctx = canvas.getContext('2d');
+
+                    // historty price labels
+                    this.chartLabels = [
+                        "1 week ago",
+                        "2 weeks ago",
+                        "3 weeks ago",
+                        "1 month ago",
+                        "6 months ago",
+                        "1 year ago",
+                        "All time low"
+                    ];
+
+                    //random prices
+                    this.chartPrices = this.chartLabels.map(() => {
+                        return (Math.random() * 50 + 5).toFixed(2);
+                    });
+
+                    if (this.chart) this.chart.destroy();
+
+                    this.chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: this.chartLabels,
+                            datasets: [{
+                                label: 'Prices over time',
+                                data: this.chartPrices,
+                                fill: false,
+                                borderColor: '#ffffff',
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        color: '#ffffff'
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    ticks: {
+                                        color: '#ffffff'
+                                    },
+                                    grid: {
+                                        color: 'rgba(255,255,255,0.15)'
+                                    }
+                                },
+                                y: {
+                                    ticks: {
+                                        color: '#ffffff'
+                                    },
+                                    grid: {
+                                        color: 'rgba(255,255,255,0.15)'
+                                    },
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+            },
+        });
+
+        newVueObj.mount('#vueApp');
+    </script>
+
+</body>
+
+</html>
