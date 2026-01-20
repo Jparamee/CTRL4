@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="decor.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WOO triple file setup</title>
+    <title>WOO</title>
 </head>
 <style>
     .chart-container {
@@ -25,14 +25,17 @@
         <!-- NAV -->
         <nav class="navbar">
             <div class="logo">WOO</div>
-            <input v-model="searchInput" class="search-bar" id="searchInput" type="text" placeholder="Search..." @keydown.enter="beginSearch" />
-            <div class="nav-links">
-                <span>Home</span>
-                <span>Upcoming</span>
-                <span>Watchlist</span>
-                <span>Profile</span>
+            <div class="Search-Nav">
+                <div class="nav-links">
+                    <span>Home</span>
+                    <span>Upcoming</span>
+                    <span>Watchlist</span>
+                    <span>Profile</span>
+                </div>
+                <input class="search-bar" placeholder="Search...   🔍"
+                v-model="searchInput" @keyDown.enter="beginSearch"/>
             </div>
-        </nav>
+        </nav> 
 
         <!-- GAME HEADER -->
         <section class="game-header">
@@ -71,7 +74,6 @@
             <div class="card similar-games">
                 <h3>Similar games</h3>
                 <img v-for="cover in similarGamesCovers" :key="cover" :src="cover" alt="Similar game cover" />
-                <p>Placeholder here</p>
             </div>
 
             <div class="chart-container">
