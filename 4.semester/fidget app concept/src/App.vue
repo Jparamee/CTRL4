@@ -1,6 +1,11 @@
 <template>
-  <div class="app">
-    <AppHeader :activeTab="activeTab" @switch-tab="switchTab" />
+  <div class="app" :class="{ 'dark-mode': isDark }">
+    <AppHeader 
+      :activeTab="activeTab" 
+      :isDark="isDark"
+      @switch-tab="switchTab" 
+      @toggle-dark="isDark = !isDark"
+    />
 
     <main class="main-content-scroll">
       <AudioSettings v-if="activeTab === 'audio'" />
@@ -32,6 +37,7 @@ import BottomDock from './components/BottomDock.vue'
 const activeTab = ref('map')
 const modalActive = ref(false)
 const selectedRoom = ref(null)
+const isDark = ref(false) // New Dark Mode State
 
 function switchTab(tabName) {
   activeTab.value = tabName
@@ -50,7 +56,7 @@ function closeModal() {
 </script>
 
 <style>
-/* Global unscoped styles for the base app */
+/* Global unscoped styles */
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
 
 *, *::before, *::after { 
@@ -60,6 +66,7 @@ function closeModal() {
 }
 
 .app {
+  /* Light Mode Variables */
   --bg-color: #f4f6f8;
   --surface: #ffffff;
   --text-main: #2c3e50;
@@ -67,6 +74,7 @@ function closeModal() {
   --primary: #52796f; 
   --primary-light: #cad2c5;
   --border: #e2e8f0;
+  --shadow: rgba(0,0,0,0.08);
   
   font-family: 'DM Sans', sans-serif;
   background: var(--bg-color);
@@ -79,6 +87,19 @@ function closeModal() {
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Dark Mode Variables */
+.app.dark-mode {
+  --bg-color: #121212;
+  --surface: #1e1e1e;
+  --text-main: #e0e0e0;
+  --text-muted: #9e9e9e;
+  --primary: #82ac97; 
+  --primary-light: #52796f;
+  --border: #333333;
+  --shadow: rgba(0,0,0,0.3);
 }
 
 .main-content-scroll {
@@ -86,5 +107,11 @@ function closeModal() {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  /* Hide Scrollbar */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+.main-content-scroll::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 </style>

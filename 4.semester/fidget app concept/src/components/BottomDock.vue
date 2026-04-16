@@ -1,46 +1,68 @@
 <template>
   <div class="bottom-dock">
-    <div class="playback-section">
-      <div class="track-meta">
-        <div class="track-info">
-          <span class="track-name">Museum Grand Tour</span>
-          <span class="track-chapter">Chapter 4: The Renaissance</span>
+    <button class="collapse-handle" @click="collapsed = !collapsed" :title="collapsed ? 'Expand player' : 'Collapse player'">
+      <div class="handle-bar"></div>
+      <svg class="chevron" :class="{ up: !collapsed }" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </button>
+
+    <Transition name="player-slide">
+      <div v-if="!collapsed" class="playback-section">
+        <div class="track-meta">
+          <div class="track-info">
+            <span class="track-name">Museum Grand Tour</span>
+            <span class="track-chapter">Chapter 4: The Renaissance</span>
+          </div>
+          <span class="track-dur">{{ formatTime(playbackPos) }} / 12:40</span>
         </div>
-        <span class="track-dur">{{ formatTime(playbackPos) }} / 12:40</span>
+        
+        <input 
+          type="range" class="slider playback-slider" v-model="playbackPos" 
+          min="0" max="760" step="1" 
+          :style="{ '--p': (playbackPos / 760 * 100) + '%' }"
+          @mousedown="pauseForSeek"
+          @touchstart="pauseForSeek"
+          @change="resumeAfterSeek"
+        />
+        
+        <div class="transport">
+          <button class="tbtn" @click="skip(-15)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+            </svg>
+          </button>
+          <button class="tbtn play" @click="togglePlay">
+            <svg v-if="!playing" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="6 4 20 12 6 20 6 4"/>
+            </svg>
+            <svg v-else width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="8" y1="5" x2="8" y2="19"/>
+              <line x1="16" y1="5" x2="16" y2="19"/>
+            </svg>
+          </button>
+          <button class="tbtn" @click="skip(15)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 1 1-.49-3.5"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="speed-row">
+          <span class="speed-label">Speed</span>
+          <div class="speed-chips">
+            <button 
+              v-for="s in speeds" :key="s"
+              class="speed-chip" 
+              :class="{ active: speed === s }"
+              @click="speed = s"
+            >{{ s }}x</button>
+          </div>
+        </div>
       </div>
-      
-      <input 
-        type="range" class="slider playback-slider" v-model="playbackPos" 
-        min="0" max="760" step="1" 
-        :style="{ '--p': (playbackPos / 760 * 100) + '%' }"
-        @input="pauseForSeek"
-        @change="resumeAfterSeek"
-      />
-      
-      <div class="transport">
-        <button class="tbtn" @click="playbackPos = Math.max(0, playbackPos - 15)">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="1 4 1 10 7 10"/>
-            <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
-          </svg>
-        </button>
-        <button class="tbtn play" @click="togglePlay">
-          <svg v-if="!playing" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="6 4 20 12 6 20 6 4"/>
-          </svg>
-          <svg v-else width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-            <line x1="8" y1="5" x2="8" y2="19"/>
-            <line x1="16" y1="5" x2="16" y2="19"/>
-          </svg>
-        </button>
-        <button class="tbtn" @click="playbackPos = Math.min(760, playbackPos + 15)">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="23 4 23 10 17 10"/>
-            <path d="M20.49 15a9 9 0 1 1-.49-3.5"/>
-          </svg>
-        </button>
-      </div>
-    </div>
+    </Transition>
 
     <div class="bottom-nav">
       <button class="nav-tab" :class="{ active: activeTab === 'map' }" @click="$emit('switch-tab', 'map')">
@@ -66,22 +88,27 @@
 <script setup>
 import { ref, watch, onUnmounted } from 'vue'
 
-defineProps({
-  activeTab: String
-})
+defineProps({ activeTab: String })
 defineEmits(['switch-tab'])
 
 const playbackPos = ref(266)
 const playing = ref(false)
+const collapsed = ref(false)
+const speed = ref(1)
+const speeds = [0.75, 1, 1.25, 1.5]
 let timer = null
 let wasPlayingBeforeSeek = false
 
 function formatTime(s) {
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+  return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
 }
 
 function togglePlay() {
   playing.value = !playing.value
+}
+
+function skip(secs) {
+  playbackPos.value = Math.max(0, Math.min(760, playbackPos.value + secs))
 }
 
 watch(playing, (isPlaying) => {
@@ -93,9 +120,23 @@ watch(playing, (isPlaying) => {
         playing.value = false
         playbackPos.value = 0
       }
-    }, 1000)
+    }, 1000 / speed.value)
   } else {
     clearInterval(timer)
+  }
+})
+
+watch(speed, () => {
+  if (playing.value) {
+    clearInterval(timer)
+    timer = setInterval(() => {
+      if (playbackPos.value < 760) {
+        playbackPos.value++
+      } else {
+        playing.value = false
+        playbackPos.value = 0
+      }
+    }, 1000 / speed.value)
   }
 })
 
@@ -105,63 +146,89 @@ function pauseForSeek() {
 }
 
 function resumeAfterSeek() {
-  if (wasPlayingBeforeSeek) {
-    playing.value = true
-  }
+  if (wasPlayingBeforeSeek) playing.value = true
 }
 
-onUnmounted(() => {
-  if (timer) clearInterval(timer)
-})
+onUnmounted(() => { if (timer) clearInterval(timer) })
 </script>
 
 <style scoped>
 .bottom-dock {
   flex-shrink: 0; background: var(--surface); border-radius: 24px 24px 0 0;
-  box-shadow: 0 -4px 24px rgba(0,0,0,0.04); padding: 24px 24px 16px;
-  display: flex; flex-direction: column; gap: 24px;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.08); border-top: 1px solid var(--border);
+  padding: 0 20px 16px; display: flex; flex-direction: column; gap: 0;
 }
-.playback-section { display: flex; flex-direction: column; }
-.track-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.track-info { display: flex; flex-direction: column; gap: 2px; }
-.track-name { font-size: 16px; font-weight: 700; }
-.track-chapter { font-size: 12px; color: var(--text-muted); }
-.track-dur { font-size: 13px; font-weight: 600; color: var(--text-main); }
-.playback-slider { height: 8px; margin-bottom: 20px; }
 
-/* Reusing slider style locally since it's needed for the input range */
+.collapse-handle {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%;
+  background: none; border: none; cursor: pointer; padding: 10px 0 8px; color: var(--text-muted);
+}
+.handle-bar { width: 36px; height: 4px; background: var(--border); border-radius: 4px; }
+.chevron { transition: transform 0.3s cubic-bezier(.4,0,.2,1); transform: rotate(0deg); }
+.chevron.up { transform: rotate(180deg); }
+
+.player-slide-enter-active, .player-slide-leave-active { transition: all 0.3s cubic-bezier(.4,0,.2,1); overflow: hidden; }
+.player-slide-enter-from, .player-slide-leave-to { max-height: 0; opacity: 0; }
+.player-slide-enter-to, .player-slide-leave-from { max-height: 240px; opacity: 1; }
+
+.playback-section { display: flex; flex-direction: column; padding-bottom: 16px; }
+
+.track-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.track-info { display: flex; flex-direction: column; gap: 2px; }
+.track-name { font-size: 15px; font-weight: 700; color: var(--text-main); }
+.track-chapter { font-size: 12px; color: var(--text-muted); }
+.track-dur {
+  font-size: 13px; font-weight: 600; color: var(--text-main);
+  font-variant-numeric: tabular-nums; min-width: 60px; text-align: right;
+}
+
 .slider {
   -webkit-appearance: none; appearance: none; width: 100%; height: 6px;
   border-radius: 6px; outline: none; cursor: pointer;
-  background: linear-gradient(to right, var(--primary) 0%, var(--primary) var(--p, 0%), #dcdfe4 var(--p, 0%), #dcdfe4 100%);
+  background: linear-gradient(to right, var(--primary) 0%, var(--primary) var(--p, 0%), var(--border) var(--p, 0%), var(--border) 100%);
 }
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
   background: #fff; border: 2px solid var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,0.15);
   cursor: pointer; transition: transform 0.1s;
 }
+.slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+.playback-slider { margin-bottom: 18px; }
 
-.transport { display: flex; justify-content: center; align-items: center; gap: 40px; }
+.transport { display: flex; justify-content: center; align-items: center; gap: 40px; margin-bottom: 14px; }
 .tbtn {
   background: none; border: none; cursor: pointer; color: var(--text-main);
-  display: flex; align-items: center; justify-content: center; transition: transform 0.1s, opacity 0.2s;
+  display: flex; align-items: center; justify-content: center; transition: transform 0.1s, opacity 0.2s; padding: 4px;
 }
 .tbtn:hover { opacity: 0.7; }
 .tbtn:active { transform: scale(0.9); }
 .tbtn.play {
-  width: 56px; height: 56px; background: var(--primary); color: #fff;
-  border-radius: 50%; box-shadow: 0 8px 16px rgba(82, 121, 111, 0.25);
+  width: 52px; height: 52px; background: var(--primary); color: #fff;
+  border-radius: 50%; box-shadow: 0 6px 16px rgba(82, 121, 111, 0.28);
 }
 .tbtn.play:hover { opacity: 1; transform: scale(1.05); }
 .tbtn.play:active { transform: scale(0.95); }
 
-.bottom-nav { display: flex; gap: 12px; }
+.speed-row { display: flex; align-items: center; gap: 10px; }
+.speed-label { font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+.speed-chips { display: flex; gap: 6px; }
+.speed-chip {
+  padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border);
+  background: var(--bg-color); font-family: inherit; font-size: 12px; font-weight: 600;
+  color: var(--text-muted); cursor: pointer; transition: all 0.18s ease;
+}
+.speed-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.speed-chip:not(.active):hover { background: var(--primary-light); color: var(--text-main); border-color: var(--primary-light); }
+
+.bottom-nav { display: flex; gap: 12px; margin-top: 4px; }
 .nav-tab {
   flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 14px; border-radius: 16px; border: 1px solid var(--border);
-  background: var(--surface); font-family: inherit; font-size: 15px; font-weight: 600;
+  padding: 13px; border-radius: 16px; border: 1px solid var(--border);
+  background: var(--bg-color); font-family: inherit; font-size: 15px; font-weight: 600;
   color: var(--text-muted); cursor: pointer; transition: all 0.2s ease;
 }
-.nav-tab.active { background: var(--text-main); color: #fff; border-color: var(--text-main); }
-.nav-tab:not(.active):hover { background: var(--bg-color); color: var(--text-main); }
+
+/* Swapped to var(--surface) so text dynamically changes with light/dark themes */
+.nav-tab.active { background: var(--text-main); color: var(--surface); border-color: var(--text-main); }
+.nav-tab:not(.active):hover { background: var(--primary-light); color: var(--text-main); }
 </style>
