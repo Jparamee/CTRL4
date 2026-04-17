@@ -1,6 +1,11 @@
 <template>
   <div class="bottom-dock">
-    <button class="collapse-handle" @click="collapsed = !collapsed" :title="collapsed ? 'Expand player' : 'Collapse player'">
+    <button class="collapse-handle" 
+      @click="collapsed = !collapsed" 
+      @touchstart="onTouchStart"
+      @touchend="onTouchEnd"
+      :title="collapsed ? 'Expand player' : 'Collapse player'"
+    >
       <div class="handle-bar"></div>
       <svg class="chevron" :class="{ up: !collapsed }" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="6 9 12 15 18 9"/>
@@ -27,8 +32,8 @@
         />
         
         <div class="transport">
-          <button class="tbtn skip-btn" @click="skip(-15)">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <button class="tbtn" @click="skip(-15)">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
               <path d="M3 3v5h5"/>
               <text x="12" y="12" text-anchor="middle" dominant-baseline="central" stroke="none" fill="currentColor" font-size="7.5" font-family="'DM Sans', sans-serif" font-weight="700" opacity="0.75">15</text>
@@ -45,8 +50,8 @@
             </svg>
           </button>
 
-          <button class="tbtn skip-btn" @click="skip(15)">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <button class="tbtn" @click="skip(15)">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
               <path d="M21 3v5h-5"/>
               <text x="12" y="12" text-anchor="middle" dominant-baseline="central" stroke="none" fill="currentColor" font-size="7.5" font-family="'DM Sans', sans-serif" font-weight="700" opacity="0.75">15</text>
@@ -95,7 +100,8 @@ import { ref, watch, onUnmounted } from 'vue'
 defineProps({ activeTab: String })
 defineEmits(['switch-tab'])
 
-const playbackPos = ref(266)
+// Changed start position to 0
+const playbackPos = ref(0)
 const playing = ref(false)
 const collapsed = ref(false)
 const speed = ref(1)
@@ -103,6 +109,22 @@ const speed = ref(1)
 const speeds = [0.75, 1, 1.25, 1.5, 2] 
 let timer = null
 let wasPlayingBeforeSeek = false
+
+// Swipe gesture logic
+let touchStartY = 0
+function onTouchStart(e) {
+  touchStartY = e.touches[0].clientY
+}
+function onTouchEnd(e) {
+  const touchEndY = e.changedTouches[0].clientY
+  const deltaY = touchEndY - touchStartY
+  
+  if (deltaY > 40) {
+    collapsed.value = true // User swiped down
+  } else if (deltaY < -40) {
+    collapsed.value = false // User swiped up
+  }
+}
 
 function formatTime(s) {
   return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
@@ -159,77 +181,32 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 
 <style scoped>
 .bottom-dock {
-  flex-shrink: 0;
-  background: var(--surface);
-  border-radius: 24px 24px 0 0;
-  box-shadow: 0 -4px 24px rgba(0,0,0,0.08);
-  border-top: 1px solid var(--border);
-  padding: 0 20px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+  flex-shrink: 0; background: var(--surface); border-radius: 24px 24px 0 0;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.08); border-top: 1px solid var(--border);
+  padding: 0 20px 16px; display: flex; flex-direction: column; gap: 0;
 }
 
-/* Collapse handle */
 .collapse-handle {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  width: 100%;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 10px 0 8px;
-  color: var(--text-muted);
+  display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%;
+  background: none; border: none; cursor: pointer; padding: 14px 0 8px; color: var(--text-muted);
 }
-.handle-bar {
-  width: 36px; height: 4px;
-  background: var(--border);
-  border-radius: 4px;
-}
-.chevron {
-  transition: transform 0.3s cubic-bezier(.4,0,.2,1);
-  transform: rotate(0deg);
-}
-.chevron.up {
-  transform: rotate(180deg);
-}
+.handle-bar { width: 36px; height: 4px; background: var(--border); border-radius: 4px; }
+.chevron { transition: transform 0.3s cubic-bezier(.4,0,.2,1); transform: rotate(0deg); }
+.chevron.up { transform: rotate(180deg); }
 
-/* Slide transition */
-.player-slide-enter-active,
-.player-slide-leave-active {
-  transition: all 0.3s cubic-bezier(.4,0,.2,1);
-  overflow: hidden;
-}
-.player-slide-enter-from,
-.player-slide-leave-to {
-  max-height: 0;
-  opacity: 0;
-}
-.player-slide-enter-to,
-.player-slide-leave-from {
-  max-height: 240px;
-  opacity: 1;
-}
+.player-slide-enter-active, .player-slide-leave-active { transition: all 0.3s cubic-bezier(.4,0,.2,1); overflow: hidden; }
+.player-slide-enter-from, .player-slide-leave-to { max-height: 0; opacity: 0; }
+.player-slide-enter-to, .player-slide-leave-from { max-height: 240px; opacity: 1; }
 
-.playback-section {
-  display: flex;
-  flex-direction: column;
-  padding-bottom: 16px;
-}
+.playback-section { display: flex; flex-direction: column; padding-bottom: 16px; }
 
-.track-meta {
-  display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;
-}
+.track-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
 .track-info { display: flex; flex-direction: column; gap: 2px; }
 .track-name { font-size: 15px; font-weight: 700; color: var(--text-main); }
 .track-chapter { font-size: 12px; color: var(--text-muted); }
 .track-dur {
   font-size: 13px; font-weight: 600; color: var(--text-main);
-  font-variant-numeric: tabular-nums;
-  min-width: 60px;
-  text-align: right;
+  font-variant-numeric: tabular-nums; min-width: 60px; text-align: right;
 }
 
 .slider {
@@ -246,15 +223,10 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 
 .playback-slider { margin-bottom: 18px; }
 
-.transport {
-  display: flex; justify-content: center; align-items: center; gap: 40px;
-  margin-bottom: 14px;
-}
+.transport { display: flex; justify-content: center; align-items: center; gap: 36px; margin-bottom: 14px; }
 .tbtn {
   background: none; border: none; cursor: pointer; color: var(--text-main);
-  display: flex; align-items: center; justify-content: center;
-  transition: transform 0.1s, opacity 0.2s;
-  padding: 4px;
+  display: flex; align-items: center; justify-content: center; transition: transform 0.1s, opacity 0.2s; padding: 4px;
 }
 .tbtn:hover { opacity: 0.7; }
 .tbtn:active { transform: scale(0.9); }
@@ -265,35 +237,18 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 .tbtn.play:hover { opacity: 1; transform: scale(1.05); }
 .tbtn.play:active { transform: scale(0.95); }
 
-/* Speed row */
-.speed-row {
-  display: flex; align-items: center; gap: 10px; overflow-x: auto; scrollbar-width: none;
-}
+.speed-row { display: flex; align-items: center; gap: 10px; overflow-x: auto; scrollbar-width: none; }
 .speed-row::-webkit-scrollbar { display: none; }
-.speed-label {
-  font-size: 12px; font-weight: 600; color: var(--text-muted);
-  white-space: nowrap;
-}
-.speed-chips {
-  display: flex; gap: 6px;
-}
+.speed-label { font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+.speed-chips { display: flex; gap: 6px; }
 .speed-chip {
-  padding: 5px 10px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background: var(--bg-color);
-  font-family: inherit; font-size: 12px; font-weight: 600;
-  color: var(--text-muted); cursor: pointer;
-  transition: all 0.18s ease;
+  padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border);
+  background: var(--bg-color); font-family: inherit; font-size: 12px; font-weight: 600;
+  color: var(--text-muted); cursor: pointer; transition: all 0.18s ease;
 }
-.speed-chip.active {
-  background: var(--primary); color: #fff; border-color: var(--primary);
-}
-.speed-chip:not(.active):hover {
-  background: var(--primary-light); color: var(--text-main); border-color: var(--primary-light);
-}
+.speed-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.speed-chip:not(.active):hover { background: var(--primary-light); color: var(--text-main); border-color: var(--primary-light); }
 
-/* Nav */
 .bottom-nav { display: flex; gap: 12px; margin-top: 4px; }
 .nav-tab {
   flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
