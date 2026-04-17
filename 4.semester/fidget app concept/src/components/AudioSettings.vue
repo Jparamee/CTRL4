@@ -11,8 +11,8 @@
           </svg>
         </div>
         <div class="text-wrap">
-          <span class="setting-label">Noise Suppression</span>
-          <span class="setting-sub">{{ noiseSuppression ? 'Active' : 'Off' }}</span>
+          <span class="setting-label">{{ t('Noise Suppression', 'Støjreduktion', 'Rauschunterdrückung') }}</span>
+          <span class="setting-sub">{{ noiseSuppression ? t('Active', 'Aktiv', 'Aktiv') : t('Off', 'Fra', 'Aus') }}</span>
         </div>
         <label class="toggle">
           <input type="checkbox" v-model="noiseSuppression" />
@@ -29,8 +29,8 @@
           </svg>
         </div>
         <div class="text-wrap">
-          <span class="setting-label">Density Alerts</span>
-          <span class="setting-sub">{{ crowdWarning ? 'On' : 'Off' }}</span>
+          <span class="setting-label">{{ t('Density Alerts', 'Tæthedsadvarsler', 'Dichtewarnungen') }}</span>
+          <span class="setting-sub">{{ crowdWarning ? t('On', 'Til', 'Ein') : t('Off', 'Fra', 'Aus') }}</span>
         </div>
         <label class="toggle">
           <input type="checkbox" v-model="crowdWarning" />
@@ -50,16 +50,12 @@
             </svg>
           </div>
           <div class="text-wrap">
-            <span class="setting-label">Theme Music</span>
-            <span class="setting-sub">Background ambiance</span>
+            <span class="setting-label">{{ t('Theme Music', 'Temamusik', 'Themenmusik') }}</span>
+            <span class="setting-sub">{{ t('Background ambiance', 'Baggrundsstemning', 'Hintergrundambiente') }}</span>
           </div>
           <span class="slider-val">{{ themeVolume }}%</span>
         </div>
-        <input 
-          type="range" class="slider" v-model="themeVolume" 
-          min="0" max="100" step="1" 
-          :style="{ '--p': themeVolume + '%' }"
-        />
+        <input type="range" class="slider" v-model="themeVolume" min="0" max="100" step="1" :style="{ '--p': themeVolume + '%' }" />
       </div>
 
       <div class="slider-divider"></div>
@@ -74,34 +70,30 @@
             </svg>
           </div>
           <div class="text-wrap">
-            <span class="setting-label">Voice Guide</span>
-            <span class="setting-sub">Narration volume</span>
+            <span class="setting-label">{{ t('Voice Guide', 'Lydguide', 'Sprachführer') }}</span>
+            <span class="setting-sub">{{ t('Narration volume', 'Fortællerlydstyrke', 'Erzähllautstärke') }}</span>
           </div>
           <span class="slider-val">{{ voiceVolume }}%</span>
         </div>
-        <input 
-          type="range" class="slider" v-model="voiceVolume" 
-          min="0" max="100" step="1" 
-          :style="{ '--p': voiceVolume + '%' }"
-        />
+        <input type="range" class="slider" v-model="voiceVolume" min="0" max="100" step="1" :style="{ '--p': voiceVolume + '%' }" />
       </div>
     </div>
-
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-
-// Import our REAL variables from the store!
 import { themeVolume, voiceVolume } from '../audioStore.js'
+
+// We only need the translation function here now! 
+import { t } from '../langStore.js'
 
 const noiseSuppression = ref(true)
 const crowdWarning = ref(true)
 </script>
 
 <style scoped>
-/* Keep all your original CSS here */
+/* ALL YOUR ORIGINAL CSS REMAINS EXACTLY THE SAME... */
 .settings-container { padding: 16px 16px 20px; display: flex; flex-direction: column; gap: 14px; }
 .toggles-row { display: flex; gap: 12px; }
 .toggle-card { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 14px 12px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }

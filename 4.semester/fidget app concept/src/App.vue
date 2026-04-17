@@ -174,6 +174,8 @@ function closeModal() { modalActive.value = false; selectedRoom.value = null }
   --primary: #82ac97; 
   --primary-light: #52796f;
   --border: #333333;
+  --room-icon-bg: #334155;
+  --room-icon-text: #cdd2d8;
 }
 
 .main-content-scroll {

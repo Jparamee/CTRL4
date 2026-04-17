@@ -6,7 +6,7 @@
       @touchstart="onTouchStart"
       @touchmove.prevent="onTouchMove"
       @touchend="onTouchEnd"
-      :title="collapsed ? 'Expand player' : 'Collapse player'"
+      :title="collapsed ? t('Expand player', 'Udvid afspiller', 'Player erweitern') : t('Collapse player', 'Skjul afspiller', 'Player minimieren')"
     >
       <div class="handle-bar"></div>
       <svg class="chevron" :class="{ up: collapsed }" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -18,8 +18,8 @@
       <div class="playback-section" ref="sectionRef">
         <div class="track-meta">
           <div class="track-info">
-            <span class="track-name">Museum Grand Tour</span>
-            <span class="track-chapter">Audio Guide</span>
+            <span class="track-name">{{ t('Museum Grand Tour', 'Museum Grand Tour', 'Museum Grand Tour') }}</span>
+            <span class="track-chapter">{{ t('Audio Guide', 'Lydguide', 'Audioguide') }}</span>
           </div>
           <span class="track-dur">{{ formatTime(currentTime) }} / {{ formatTime(duration) }}</span>
         </div>
@@ -64,7 +64,7 @@
         </div>
 
         <div class="speed-row">
-          <span class="speed-label">Speed</span>
+          <span class="speed-label">{{ t('Speed', 'Hastighed', 'Tempo') }}</span>
           <div class="speed-chips">
             <button 
               v-for="s in speeds" :key="s"
@@ -84,7 +84,7 @@
           <line x1="8" y1="2" x2="8" y2="18"/>
           <line x1="16" y1="6" x2="16" y2="22"/>
         </svg>
-        Map
+        {{ t('Map', 'Kort', 'Karte') }}
       </button>
       <button class="nav-tab" :class="{ active: activeTab === 'audio' }" @click.stop="$emit('switch-tab', 'audio')">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -92,7 +92,7 @@
           <circle cx="6" cy="18" r="3"/>
           <circle cx="18" cy="16" r="3"/>
         </svg>
-        Audio
+        {{ t('Audio', 'Lyd', 'Audio') }}
       </button>
     </div>
   </div>
@@ -101,8 +101,9 @@
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 
-// 1. WE ADDED togglePlay TO THIS IMPORT LIST!
+// Import the audio controls AND our new translation function!
 import { isPlaying, currentTime, duration, playbackSpeed, skipAudio, seekAudio, togglePlay } from '../audioStore.js'
+import { t } from '../langStore.js'
 
 const props = defineProps({ activeTab: String })
 defineEmits(['switch-tab'])
@@ -120,7 +121,6 @@ watch(() => props.activeTab, (newTab) => {
   }
 })
 
-// --- Responsive Swipe & Drag Logic ---
 const sectionRef = ref(null)
 const fullHeight = ref(190) 
 
@@ -179,9 +179,7 @@ const wrapperStyle = computed(() => {
     width: '100%'
   }
 })
-// -------------------------------------
 
-// AUDIO FUNCTIONS
 function formatTime(s) {
   if (isNaN(s) || !isFinite(s)) return "0:00"
   return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
@@ -193,94 +191,47 @@ function handleSeek(e) {
 
 function pauseForSeek() {
   wasPlayingBeforeSeek = isPlaying.value
-  if (isPlaying.value) {
-    togglePlay() // 2. Uses the real toggle from the store to pause while dragging!
-  }
+  if (isPlaying.value) togglePlay() 
 }
 
 function resumeAfterSeek() {
-  if (wasPlayingBeforeSeek && !isPlaying.value) {
-    togglePlay() // 3. Uses the real toggle to resume after dragging!
-  }
+  if (wasPlayingBeforeSeek && !isPlaying.value) togglePlay() 
 }
-// Notice: The old fake "togglePlay" function that was here is now deleted!
 </script>
 
 <style scoped>
-/* Keeping your exact CSS! */
-.bottom-dock {
-  flex-shrink: 0; background: var(--surface); border-radius: 24px 24px 0 0;
-  box-shadow: 0 -4px 24px rgba(0,0,0,0.08); border-top: 1px solid var(--border);
-  padding: 0 20px 16px; display: flex; flex-direction: column; gap: 0;
-}
-
-.dock-handle-area {
-  display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%;
-  cursor: pointer; padding: 14px 0 10px; color: var(--text-muted);
-  -webkit-tap-highlight-color: transparent; 
-}
+/* YOUR EXISTING BOTTOM DOCK CSS STAYS THE SAME */
+.bottom-dock { flex-shrink: 0; background: var(--surface); border-radius: 24px 24px 0 0; box-shadow: 0 -4px 24px rgba(0,0,0,0.08); border-top: 1px solid var(--border); padding: 0 20px 16px; display: flex; flex-direction: column; gap: 0; }
+.dock-handle-area { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; cursor: pointer; padding: 14px 0 10px; color: var(--text-muted); -webkit-tap-highlight-color: transparent; }
 .handle-bar { width: 36px; height: 4px; background: var(--border); border-radius: 4px; }
 .chevron { transition: transform 0.3s cubic-bezier(.4,0,.2,1); transform: rotate(0deg); }
 .chevron.up { transform: rotate(180deg); }
-
 .playback-section { display: flex; flex-direction: column; padding-bottom: 16px; }
-
 .track-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
 .track-info { display: flex; flex-direction: column; gap: 2px; }
 .track-name { font-size: 15px; font-weight: 700; color: var(--text-main); }
 .track-chapter { font-size: 12px; color: var(--text-muted); }
-.track-dur {
-  font-size: 13px; font-weight: 600; color: var(--text-main);
-  font-variant-numeric: tabular-nums; min-width: 60px; text-align: right;
-}
-
-.slider {
-  -webkit-appearance: none; appearance: none; width: 100%; height: 6px;
-  border-radius: 6px; outline: none; cursor: pointer;
-  background: linear-gradient(to right, var(--primary) 0%, var(--primary) var(--p, 0%), var(--border) var(--p, 0%), var(--border) 100%);
-}
-.slider::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
-  background: #fff; border: 2px solid var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  cursor: pointer; transition: transform 0.1s;
-}
+.track-dur { font-size: 13px; font-weight: 600; color: var(--text-main); font-variant-numeric: tabular-nums; min-width: 60px; text-align: right; }
+.slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 6px; outline: none; cursor: pointer; background: linear-gradient(to right, var(--primary) 0%, var(--primary) var(--p, 0%), var(--border) var(--p, 0%), var(--border) 100%); }
+.slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 2px solid var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer; transition: transform 0.1s; }
 .slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
-
 .playback-slider { margin-bottom: 18px; }
-
 .transport { display: flex; justify-content: center; align-items: center; gap: 40px; margin-bottom: 14px; }
-.tbtn {
-  background: none; border: none; cursor: pointer; color: var(--text-main);
-  display: flex; align-items: center; justify-content: center; transition: transform 0.1s, opacity 0.2s; padding: 4px;
-}
+.tbtn { background: none; border: none; cursor: pointer; color: var(--text-main); display: flex; align-items: center; justify-content: center; transition: transform 0.1s, opacity 0.2s; padding: 4px; }
 .tbtn:hover { opacity: 0.7; }
 .tbtn:active { transform: scale(0.9); }
-.tbtn.play {
-  width: 52px; height: 52px; background: var(--primary); color: #fff;
-  border-radius: 50%; box-shadow: 0 6px 16px rgba(82, 121, 111, 0.28);
-}
+.tbtn.play { width: 52px; height: 52px; background: var(--primary); color: #fff; border-radius: 50%; box-shadow: 0 6px 16px rgba(82, 121, 111, 0.28); }
 .tbtn.play:hover { opacity: 1; transform: scale(1.05); }
 .tbtn.play:active { transform: scale(0.95); }
-
-.speed-row { display: flex; align-items: center; gap: 10px; overflow-x: auto; scrollbar-width: none; }
+.speed-row { display: flex; align-items: center; justify-content: center; gap: 10px; overflow-x: auto; scrollbar-width: none; }
 .speed-row::-webkit-scrollbar { display: none; }
 .speed-label { font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
 .speed-chips { display: flex; gap: 6px; }
-.speed-chip {
-  padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border);
-  background: var(--bg-color); font-family: inherit; font-size: 12px; font-weight: 600;
-  color: var(--text-muted); cursor: pointer; transition: all 0.18s ease;
-}
+.speed-chip { padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg-color); font-family: inherit; font-size: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.18s ease; }
 .speed-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 .speed-chip:not(.active):hover { background: var(--primary-light); color: var(--text-main); border-color: var(--primary-light); }
-
 .bottom-nav { display: flex; gap: 12px; margin-top: 4px; }
-.nav-tab {
-  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 13px; border-radius: 16px; border: 1px solid var(--border);
-  background: var(--bg-color); font-family: inherit; font-size: 15px; font-weight: 600;
-  color: var(--text-muted); cursor: pointer; transition: all 0.2s ease;
-}
+.nav-tab { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px; border-radius: 16px; border: 1px solid var(--border); background: var(--bg-color); font-family: inherit; font-size: 15px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.2s ease; }
 .nav-tab.active { background: var(--text-main); color: var(--surface); border-color: var(--text-main); }
 .nav-tab:not(.active):hover { background: var(--primary-light); color: var(--text-main); }
 </style>

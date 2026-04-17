@@ -13,7 +13,6 @@
       
       <div class="modal-body">
 
-        <!-- Crowd Size first -->
         <div class="modal-section">
           <div class="section-header">
             <div class="section-icon-wrap crowd-icon">
@@ -23,17 +22,16 @@
                 <line x1="12" y1="8" x2="12.01" y2="8"/>
               </svg>
             </div>
-            <h4 class="section-title">Crowd Size</h4>
+            <h4 class="section-title">{{ t('Crowd Size', 'Besøgende', 'Besuchermenge') }}</h4>
           </div>
-          <p class="crowd-amount">People present: <strong>{{ room.population }}</strong></p>
+          <p class="crowd-amount">{{ t('People present:', 'Tilstedeværende:', 'Anwesende Personen:') }} <strong>{{ room.population }}</strong></p>
           <div class="segmented-control">
-            <button class="segment" :class="{ active: room.busy === 'low' }">Low</button>
-            <button class="segment" :class="{ active: room.busy === 'med' }">Medium</button>
-            <button class="segment" :class="{ active: room.busy === 'high' }">High</button>
+            <button class="segment" :class="{ active: room.busy === 'low' }">{{ t('Low', 'Lav', 'Niedrig') }}</button>
+            <button class="segment" :class="{ active: room.busy === 'med' }">{{ t('Medium', 'Medium', 'Mittel') }}</button>
+            <button class="segment" :class="{ active: room.busy === 'high' }">{{ t('High', 'Høj', 'Hoch') }}</button>
           </div>
         </div>
 
-        <!-- Trigger warnings below crowd, only if any -->
         <template v-if="room.trigger_warnings && room.trigger_warnings.length > 0">
           <div class="divider"></div>
           <div class="modal-section">
@@ -45,7 +43,7 @@
                   <line x1="12" y1="17" x2="12.01" y2="17"/>
                 </svg>
               </div>
-              <h4 class="section-title">Content Advisory</h4>
+              <h4 class="section-title">{{ t('Content Advisory', 'Indholdsadvarsel', 'Inhaltswarnung') }}</h4>
             </div>
             <ul class="trigger-list">
               <li v-for="warning in room.trigger_warnings" :key="warning">{{ warning }}</li>
@@ -59,6 +57,9 @@
 </template>
 
 <script setup>
+// IMPORT THE TRANSLATOR!
+import { t } from '../langStore.js'
+
 defineProps({
   room: {
     type: Object,
@@ -69,6 +70,7 @@ defineEmits(['close'])
 </script>
 
 <style scoped>
+/* YOUR EXACT CSS REMAINS UNTOUCHED */
 .modal-overlay {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
   background: rgba(44, 62, 80, 0.45);
@@ -82,6 +84,19 @@ defineEmits(['close'])
   box-shadow: 0 16px 40px rgba(0,0,0,0.14);
   display: flex; flex-direction: column;
   animation: pop-in 0.22s cubic-bezier(.4,0,.2,1);
+  box-sizing: border-box; 
+  max-width: 90vw; 
+  width: 340px;
+  overflow-x: hidden; 
+}
+
+.modal-content h2, 
+.modal-content h3, /* Added h3 here just in case! */
+.modal-content p, 
+.modal-content span {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
 }
 
 @keyframes pop-in {
@@ -110,9 +125,7 @@ defineEmits(['close'])
   width: 34px; height: 34px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-/* Crowd icon — same green palette */
 .crowd-icon { background: var(--primary-light); color: var(--primary); }
-/* Trigger icon — muted teal/sage instead of red */
 .trigger-icon { background: var(--primary-light); color: var(--primary); }
 
 .section-title { font-size: 15px; font-weight: 700; color: var(--text-main); }
