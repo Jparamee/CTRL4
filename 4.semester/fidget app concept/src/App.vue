@@ -4,7 +4,7 @@
       :activeTab="activeTab" 
       :darkMode="darkMode" 
       @switch-tab="switchTab" 
-      @toggle-dark="toggleDarkMode" 
+      @toggle-dark="darkMode = !darkMode" 
     />
 
     <main class="main-content-scroll">
@@ -23,6 +23,11 @@
     />
 
     <BottomDock :activeTab="activeTab" @switch-tab="switchTab" />
+
+    <Transition name="fade-scale">
+      <WelcomeModal v-if="showWelcome" @close="dismissWelcome" />
+    </Transition>
+
   </div>
 </template>
 
@@ -33,11 +38,20 @@ import AudioSettings from './components/AudioSettings.vue'
 import VenueMap from './components/VenueMap.vue'
 import RoomModal from './components/RoomModal.vue'
 import BottomDock from './components/BottomDock.vue'
+import WelcomeModal from './components/WelcomeModal.vue'
 
 const activeTab = ref('map')
 const modalActive = ref(false)
 const selectedRoom = ref(null)
 const darkMode = ref(false)
+
+// --- TESTING MODE: Always true on page refresh ---
+const showWelcome = ref(true)
+
+function dismissWelcome() {
+  showWelcome.value = false
+}
+// -------------------------------------------------
 
 function switchTab(tabName) {
   activeTab.value = tabName
@@ -52,11 +66,6 @@ function openModal(roomData) {
 function closeModal() {
   modalActive.value = false
   selectedRoom.value = null
-}
-
-// Dedicated function ensures the ref updates properly across components
-function toggleDarkMode() {
-  darkMode.value = !darkMode.value
 }
 </script>
 
@@ -92,15 +101,25 @@ function toggleDarkMode() {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Dark mode overrides */
+/* Smooth pop-in animation for the welcome modal */
+.fade-scale-enter-active, .fade-scale-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.fade-scale-enter-from, .fade-scale-leave-to {
+  opacity: 0;
+}
+.fade-scale-enter-from .modal-content, .fade-scale-leave-to .modal-content {
+  transform: scale(0.95);
+}
+
 .app.dark {
-  --bg-color: #1c1f26;
-  --surface: #252830;
-  --text-main: #dde2dd;
-  --text-muted: #7a8a86;
-  --primary: #6aaa98;
-  --primary-light: #384a44;
-  --border: #333840;
+  --bg-color: #121212;
+  --surface: #1e1e1e;
+  --text-main: #e0e0e0;
+  --text-muted: #9e9e9e;
+  --primary: #82ac97; 
+  --primary-light: #52796f;
+  --border: #333333;
 }
 
 .main-content-scroll {
@@ -108,10 +127,10 @@ function toggleDarkMode() {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
 }
 .main-content-scroll::-webkit-scrollbar {
-  display: none;
+  display: none; 
 }
 </style>
