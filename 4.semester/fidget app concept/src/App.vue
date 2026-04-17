@@ -38,6 +38,9 @@ import { ref, onMounted } from 'vue'
 import { Geolocation } from '@capacitor/geolocation'
 import { museums } from './data/mapData.js'
 
+// NEW: Import our audio swapper function
+import { changeRoomTheme } from './audioStore.js'
+
 import AppHeader from './components/AppHeader.vue'
 import AudioSettings from './components/AudioSettings.vue'
 import VenueMap from './components/VenueMap.vue'
@@ -51,35 +54,25 @@ const selectedRoom = ref(null)
 const darkMode = ref(false)
 const showWelcome = ref(true)
 
-// --- GPS & GEOFENCING STATE ---
-// FIX: Start with a default museum so the screen is NEVER blank!
 const currentMuseumName = ref(museums['natural-history'].name)
 const currentMuseumFloors = ref(museums['natural-history'].floors)
 
-// The Haversine Formula (calculates real-world distance between GPS coordinates)
 function getDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth's radius in km
+  const R = 6371; 
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLon = (lon2 - lon1) * (Math.PI / 180);
   const a = 
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; // Distance in kilometers
+  return R * c; 
 }
 
 async function locateUser() {
   try {
-    // FIX: We MUST ask for permission first on Android/iOS!
     const permissions = await Geolocation.requestPermissions();
-    
-    // If they click "Deny", just stop and let them look at the default map
-    if (permissions.location !== 'granted') {
-      console.log("User denied location access.");
-      return; 
-    }
+    if (permissions.location !== 'granted') return; 
 
-    // Now it is safe to get the location
     const coordinates = await Geolocation.getCurrentPosition();
     const userLat = coordinates.coords.latitude;
     const userLng = coordinates.coords.longitude;
@@ -87,11 +80,9 @@ async function locateUser() {
     let closestMuseum = null;
     let shortestDistance = Infinity;
 
-    // Loop through our database to find the closest one
     for (const key in museums) {
       const museum = museums[key];
       const distance = getDistance(userLat, userLng, museum.lat, museum.lng);
-      
       if (distance < shortestDistance) {
         shortestDistance = distance;
         closestMuseum = museum;
@@ -104,19 +95,27 @@ async function locateUser() {
     }
   } catch (error) {
     console.error("GPS Error:", error);
-    // If error, it safely stays on the Natural History fallback
   }
 }
 
-// Check location as soon as the app starts!
 onMounted(() => {
   locateUser()
 })
-// ------------------------------
 
 function dismissWelcome() { showWelcome.value = false }
 function switchTab(tabName) { activeTab.value = tabName; closeModal() }
-function openModal(roomData) { selectedRoom.value = roomData; modalActive.value = true }
+
+// THE MAGIC HAPPENS HERE:
+function openModal(roomData) { 
+  selectedRoom.value = roomData; 
+  modalActive.value = true;
+  
+  // If the room has specific audio, swap the theme music!
+  if (roomData.themeAudio) {
+    changeRoomTheme(roomData.themeAudio);
+  }
+}
+
 function closeModal() { modalActive.value = false; selectedRoom.value = null }
 </script>
 

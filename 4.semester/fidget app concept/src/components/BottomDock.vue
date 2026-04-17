@@ -19,24 +19,24 @@
         <div class="track-meta">
           <div class="track-info">
             <span class="track-name">Museum Grand Tour</span>
-            <span class="track-chapter">Chapter 4: The Renaissance</span>
+            <span class="track-chapter">Audio Guide</span>
           </div>
-          <span class="track-dur">{{ formatTime(playbackPos) }} / 12:40</span>
+          <span class="track-dur">{{ formatTime(currentTime) }} / {{ formatTime(duration) }}</span>
         </div>
         
         <input 
-          type="range" class="slider playback-slider" v-model="playbackPos" 
-          min="0" max="760" step="1" 
-          :style="{ '--p': (playbackPos / 760 * 100) + '%' }"
+          type="range" class="slider playback-slider" 
+          :value="currentTime" 
+          min="0" :max="duration || 100" step="1" 
+          :style="{ '--p': (currentTime / (duration || 1) * 100) + '%' }"
           @mousedown.stop="pauseForSeek"
           @touchstart.stop="pauseForSeek"
-          @touchmove.stop
-          @touchend.stop
+          @input="handleSeek"
           @change="resumeAfterSeek"
         />
         
         <div class="transport">
-          <button class="tbtn" @click.stop="skip(-15)">
+          <button class="tbtn" @click.stop="skipAudio(-15)">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
               <path d="M3 3v5h5"/>
@@ -45,7 +45,7 @@
           </button>
 
           <button class="tbtn play" @click.stop="togglePlay">
-            <svg v-if="!playing" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <svg v-if="!isPlaying" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
               <polygon points="6 4 20 12 6 20 6 4"/>
             </svg>
             <svg v-else width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
@@ -54,7 +54,7 @@
             </svg>
           </button>
 
-          <button class="tbtn" @click.stop="skip(15)">
+          <button class="tbtn" @click.stop="skipAudio(15)">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
               <path d="M21 3v5h-5"/>
@@ -69,8 +69,8 @@
             <button 
               v-for="s in speeds" :key="s"
               class="speed-chip" 
-              :class="{ active: speed === s }"
-              @click.stop="speed = s"
+              :class="{ active: playbackSpeed === s }"
+              @click.stop="playbackSpeed = s"
             >{{ s }}x</button>
           </div>
         </div>
@@ -99,25 +99,20 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
+
+// 1. WE ADDED togglePlay TO THIS IMPORT LIST!
+import { isPlaying, currentTime, duration, playbackSpeed, skipAudio, seekAudio, togglePlay } from '../audioStore.js'
 
 const props = defineProps({ activeTab: String })
 defineEmits(['switch-tab'])
 
-const playbackPos = ref(0)
-const playing = ref(false)
-// 1. Player now starts collapsed!
 const collapsed = ref(true) 
-const speed = ref(1)
-
 const speeds = [0.75, 1, 1.25, 1.5, 2] 
-let timer = null
-let wasPlayingBeforeSeek = false
 
-// 2. Track if it has been auto-expanded yet
+let wasPlayingBeforeSeek = false
 let hasAutoExpanded = false
 
-// 3. Watch the tab prop to trigger the auto-expand
 watch(() => props.activeTab, (newTab) => {
   if (newTab === 'audio' && !hasAutoExpanded) {
     collapsed.value = false
@@ -127,19 +122,16 @@ watch(() => props.activeTab, (newTab) => {
 
 // --- Responsive Swipe & Drag Logic ---
 const sectionRef = ref(null)
-const fullHeight = ref(190) // Fallback height
+const fullHeight = ref(190) 
 
 const isDragging = ref(false)
 const dragOffset = ref(0)
 let touchStartY = 0
 
 onMounted(() => {
-  if (sectionRef.value) {
-    fullHeight.value = sectionRef.value.offsetHeight || 190
-  }
+  if (sectionRef.value) fullHeight.value = sectionRef.value.offsetHeight || 190
 })
 
-// Ensures accurate height measurement when un-collapsing
 watch(collapsed, async (isCollapsed) => {
   if (!isCollapsed && sectionRef.value) {
     await nextTick()
@@ -147,55 +139,38 @@ watch(collapsed, async (isCollapsed) => {
   }
 })
 
-function toggleCollapse() {
-  collapsed.value = !collapsed.value
-}
+function toggleCollapse() { collapsed.value = !collapsed.value }
 
 function onTouchStart(e) {
   isDragging.value = true
   touchStartY = e.touches[0].clientY
   dragOffset.value = 0
-  
-  if (sectionRef.value) {
-    fullHeight.value = sectionRef.value.offsetHeight || 190
-  }
+  if (sectionRef.value) fullHeight.value = sectionRef.value.offsetHeight || 190
 }
 
 function onTouchMove(e) {
   if (!isDragging.value) return
   const currentY = e.touches[0].clientY
   const delta = currentY - touchStartY
-  
   if (collapsed.value && delta > 0) return 
   if (!collapsed.value && delta < 0) return
-  
   dragOffset.value = delta
 }
 
 function onTouchEnd() {
   if (!isDragging.value) return
   isDragging.value = false
-  
-  if (collapsed.value && dragOffset.value < -40) {
-    collapsed.value = false
-  } else if (!collapsed.value && dragOffset.value > 40) {
-    collapsed.value = true
-  }
-  
+  if (collapsed.value && dragOffset.value < -40) collapsed.value = false
+  else if (!collapsed.value && dragOffset.value > 40) collapsed.value = true
   dragOffset.value = 0
 }
 
 const wrapperStyle = computed(() => {
   let currentHeight = collapsed.value ? 0 : fullHeight.value
-  
   if (isDragging.value) {
-    if (collapsed.value) {
-      currentHeight = Math.max(0, Math.min(fullHeight.value, -dragOffset.value))
-    } else {
-      currentHeight = Math.max(0, Math.min(fullHeight.value, fullHeight.value - dragOffset.value))
-    }
+    if (collapsed.value) currentHeight = Math.max(0, Math.min(fullHeight.value, -dragOffset.value))
+    else currentHeight = Math.max(0, Math.min(fullHeight.value, fullHeight.value - dragOffset.value))
   }
-  
   return {
     height: `${currentHeight}px`,
     opacity: Math.max(0, currentHeight / fullHeight.value),
@@ -206,60 +181,33 @@ const wrapperStyle = computed(() => {
 })
 // -------------------------------------
 
+// AUDIO FUNCTIONS
 function formatTime(s) {
+  if (isNaN(s) || !isFinite(s)) return "0:00"
   return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
 }
 
-function togglePlay() {
-  playing.value = !playing.value
+function handleSeek(e) {
+  seekAudio(Number(e.target.value))
 }
-
-function skip(secs) {
-  playbackPos.value = Math.max(0, Math.min(760, playbackPos.value + secs))
-}
-
-watch(playing, (isPlaying) => {
-  if (isPlaying) {
-    timer = setInterval(() => {
-      if (playbackPos.value < 760) {
-        playbackPos.value++
-      } else {
-        playing.value = false
-        playbackPos.value = 0
-      }
-    }, 1000 / speed.value)
-  } else {
-    clearInterval(timer)
-  }
-})
-
-watch(speed, () => {
-  if (playing.value) {
-    clearInterval(timer)
-    timer = setInterval(() => {
-      if (playbackPos.value < 760) {
-        playbackPos.value++
-      } else {
-        playing.value = false
-        playbackPos.value = 0
-      }
-    }, 1000 / speed.value)
-  }
-})
 
 function pauseForSeek() {
-  wasPlayingBeforeSeek = playing.value
-  playing.value = false
+  wasPlayingBeforeSeek = isPlaying.value
+  if (isPlaying.value) {
+    togglePlay() // 2. Uses the real toggle from the store to pause while dragging!
+  }
 }
 
 function resumeAfterSeek() {
-  if (wasPlayingBeforeSeek) playing.value = true
+  if (wasPlayingBeforeSeek && !isPlaying.value) {
+    togglePlay() // 3. Uses the real toggle to resume after dragging!
+  }
 }
-
-onUnmounted(() => { if (timer) clearInterval(timer) })
+// Notice: The old fake "togglePlay" function that was here is now deleted!
 </script>
 
 <style scoped>
+/* Keeping your exact CSS! */
 .bottom-dock {
   flex-shrink: 0; background: var(--surface); border-radius: 24px 24px 0 0;
   box-shadow: 0 -4px 24px rgba(0,0,0,0.08); border-top: 1px solid var(--border);

@@ -53,12 +53,12 @@
             <span class="setting-label">Theme Music</span>
             <span class="setting-sub">Background ambiance</span>
           </div>
-          <span class="slider-val">{{ themeMusic }}%</span>
+          <span class="slider-val">{{ themeVolume }}%</span>
         </div>
         <input 
-          type="range" class="slider" v-model="themeMusic" 
+          type="range" class="slider" v-model="themeVolume" 
           min="0" max="100" step="1" 
-          :style="{ '--p': themeMusic + '%' }"
+          :style="{ '--p': themeVolume + '%' }"
         />
       </div>
 
@@ -77,12 +77,12 @@
             <span class="setting-label">Voice Guide</span>
             <span class="setting-sub">Narration volume</span>
           </div>
-          <span class="slider-val">{{ audioGuide }}%</span>
+          <span class="slider-val">{{ voiceVolume }}%</span>
         </div>
         <input 
-          type="range" class="slider" v-model="audioGuide" 
+          type="range" class="slider" v-model="voiceVolume" 
           min="0" max="100" step="1" 
-          :style="{ '--p': audioGuide + '%' }"
+          :style="{ '--p': voiceVolume + '%' }"
         />
       </div>
     </div>
@@ -90,122 +90,41 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref } from 'vue'
+
+// Import our REAL variables from the store!
+import { themeVolume, voiceVolume } from '../audioStore.js'
 
 const noiseSuppression = ref(true)
 const crowdWarning = ref(true)
-// Default set to 50
-const themeMusic = ref(50)
-const audioGuide = ref(50)
-</script>
-
-<script setup>
-// The variables above are automatically available here and in the template
 </script>
 
 <style scoped>
-.settings-container {
-  padding: 16px 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-/* Horizontal toggle row */
-.toggles-row {
-  display: flex;
-  gap: 12px;
-}
-.toggle-card {
-  flex: 1;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 14px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: flex-start;
-}
-.toggle-card .icon-wrap {
-  width: 36px; height: 36px;
-  background: var(--bg-color);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text-main); flex-shrink: 0;
-}
-.toggle-card .text-wrap {
-  display: flex; flex-direction: column; gap: 2px; width: 100%;
-}
-.toggle-card .toggle {
-  align-self: flex-end;
-}
-
-/* Sliders card */
-.sliders-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 18px 16px;
-  display: flex;
-  flex-direction: column;
-}
-.slider-divider {
-  height: 1px;
-  background: var(--border);
-  margin: 18px 0;
-}
-
+/* Keep all your original CSS here */
+.settings-container { padding: 16px 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+.toggles-row { display: flex; gap: 12px; }
+.toggle-card { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 14px 12px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.toggle-card .icon-wrap { width: 36px; height: 36px; background: var(--bg-color); border: 1px solid var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-main); flex-shrink: 0; }
+.toggle-card .text-wrap { display: flex; flex-direction: column; gap: 2px; width: 100%; }
+.toggle-card .toggle { align-self: flex-end; }
+.sliders-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 18px 16px; display: flex; flex-direction: column; }
+.slider-divider { height: 1px; background: var(--border); margin: 18px 0; }
 .setting-row-slider { display: flex; flex-direction: column; gap: 14px; }
 .setting-info-group { display: flex; align-items: center; gap: 14px; }
 .slider-header { width: 100%; }
-
-.icon-wrap {
-  width: 36px; height: 36px; background: var(--bg-color);
-  border: 1px solid var(--border); border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text-main); flex-shrink: 0;
-}
+.icon-wrap { width: 36px; height: 36px; background: var(--bg-color); border: 1px solid var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-main); flex-shrink: 0; }
 .text-wrap { display: flex; flex-direction: column; gap: 2px; flex: 1; }
 .setting-label { font-size: 15px; font-weight: 600; color: var(--text-main); }
 .setting-sub { font-size: 12px; color: var(--text-muted); font-weight: 400; }
-.slider-val {
-  font-size: 13px; font-weight: 600; color: var(--primary);
-  min-width: 36px; text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Toggle */
+.slider-val { font-size: 13px; font-weight: 600; color: var(--primary); min-width: 36px; text-align: right; font-variant-numeric: tabular-nums; }
 .toggle { position: relative; cursor: pointer; display: flex; align-items: center; }
 .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
-.track {
-  display: block; width: 44px; height: 26px; background: #dcdfe4;
-  border-radius: 30px; transition: background 0.3s ease; position: relative;
-}
-.thumb {
-  position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
-  background: #fff; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-  transition: transform 0.3s cubic-bezier(.4,0,.2,1);
-}
+.track { display: block; width: 44px; height: 26px; background: #dcdfe4; border-radius: 30px; transition: background 0.3s ease; position: relative; }
+.thumb { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: #fff; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: transform 0.3s cubic-bezier(.4,0,.2,1); }
 .toggle input:checked + .track { background: var(--primary); }
 .toggle input:checked + .track .thumb { transform: translateX(18px); }
-
-/* Slider */
-.slider {
-  -webkit-appearance: none; appearance: none; width: 100%; height: 6px;
-  border-radius: 6px; outline: none; cursor: pointer;
-  background: linear-gradient(to right, var(--primary) 0%, var(--primary) var(--p, 0%), var(--border) var(--p, 0%), var(--border) 100%);
-}
-.slider::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
-  background: #fff; border: 2px solid var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  cursor: pointer; transition: transform 0.1s;
-}
+.slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 6px; outline: none; cursor: pointer; background: linear-gradient(to right, var(--primary) 0%, var(--primary) var(--p, 0%), var(--border) var(--p, 0%), var(--border) 100%); }
+.slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 2px solid var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer; transition: transform 0.1s; }
 .slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
-.slider::-moz-range-thumb {
-  width: 20px; height: 20px; border-radius: 50%; background: #fff;
-  border: 2px solid var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer;
-}
 </style>
