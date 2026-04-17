@@ -28,13 +28,15 @@
           type="range" class="slider playback-slider" v-model="playbackPos" 
           min="0" max="760" step="1" 
           :style="{ '--p': (playbackPos / 760 * 100) + '%' }"
-          @mousedown="pauseForSeek"
+          @mousedown.stop="pauseForSeek"
           @touchstart.stop="pauseForSeek"
+          @touchmove.stop
+          @touchend.stop
           @change="resumeAfterSeek"
         />
         
         <div class="transport">
-          <button class="tbtn" @click="skip(-15)">
+          <button class="tbtn" @click.stop="skip(-15)">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
               <path d="M3 3v5h5"/>
@@ -42,7 +44,7 @@
             </svg>
           </button>
 
-          <button class="tbtn play" @click="togglePlay">
+          <button class="tbtn play" @click.stop="togglePlay">
             <svg v-if="!playing" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
               <polygon points="6 4 20 12 6 20 6 4"/>
             </svg>
@@ -52,7 +54,7 @@
             </svg>
           </button>
 
-          <button class="tbtn" @click="skip(15)">
+          <button class="tbtn" @click.stop="skip(15)">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
               <path d="M21 3v5h-5"/>
@@ -68,7 +70,7 @@
               v-for="s in speeds" :key="s"
               class="speed-chip" 
               :class="{ active: speed === s }"
-              @click="speed = s"
+              @click.stop="speed = s"
             >{{ s }}x</button>
           </div>
         </div>
@@ -76,7 +78,7 @@
     </div>
 
     <div class="bottom-nav">
-      <button class="nav-tab" :class="{ active: activeTab === 'map' }" @click="$emit('switch-tab', 'map')">
+      <button class="nav-tab" :class="{ active: activeTab === 'map' }" @click.stop="$emit('switch-tab', 'map')">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
           <line x1="8" y1="2" x2="8" y2="18"/>
@@ -84,7 +86,7 @@
         </svg>
         Map
       </button>
-      <button class="nav-tab" :class="{ active: activeTab === 'audio' }" @click="$emit('switch-tab', 'audio')">
+      <button class="nav-tab" :class="{ active: activeTab === 'audio' }" @click.stop="$emit('switch-tab', 'audio')">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 18V5l12-2v13"/>
           <circle cx="6" cy="18" r="3"/>
@@ -97,19 +99,31 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 
-defineProps({ activeTab: String })
+const props = defineProps({ activeTab: String })
 defineEmits(['switch-tab'])
 
 const playbackPos = ref(0)
 const playing = ref(false)
-const collapsed = ref(false)
+// 1. Player now starts collapsed!
+const collapsed = ref(true) 
 const speed = ref(1)
 
 const speeds = [0.75, 1, 1.25, 1.5, 2] 
 let timer = null
 let wasPlayingBeforeSeek = false
+
+// 2. Track if it has been auto-expanded yet
+let hasAutoExpanded = false
+
+// 3. Watch the tab prop to trigger the auto-expand
+watch(() => props.activeTab, (newTab) => {
+  if (newTab === 'audio' && !hasAutoExpanded) {
+    collapsed.value = false
+    hasAutoExpanded = true
+  }
+})
 
 // --- Responsive Swipe & Drag Logic ---
 const sectionRef = ref(null)
@@ -120,9 +134,16 @@ const dragOffset = ref(0)
 let touchStartY = 0
 
 onMounted(() => {
-  // Automatically measures the true height of the player UI
   if (sectionRef.value) {
-    fullHeight.value = sectionRef.value.offsetHeight
+    fullHeight.value = sectionRef.value.offsetHeight || 190
+  }
+})
+
+// Ensures accurate height measurement when un-collapsing
+watch(collapsed, async (isCollapsed) => {
+  if (!isCollapsed && sectionRef.value) {
+    await nextTick()
+    fullHeight.value = sectionRef.value.offsetHeight || 190
   }
 })
 
@@ -136,7 +157,7 @@ function onTouchStart(e) {
   dragOffset.value = 0
   
   if (sectionRef.value) {
-    fullHeight.value = sectionRef.value.offsetHeight
+    fullHeight.value = sectionRef.value.offsetHeight || 190
   }
 }
 
@@ -145,7 +166,6 @@ function onTouchMove(e) {
   const currentY = e.touches[0].clientY
   const delta = currentY - touchStartY
   
-  // Prevent dragging past the limits
   if (collapsed.value && delta > 0) return 
   if (!collapsed.value && delta < 0) return
   
@@ -156,7 +176,6 @@ function onTouchEnd() {
   if (!isDragging.value) return
   isDragging.value = false
   
-  // Threshold to determine if it should collapse or expand fully
   if (collapsed.value && dragOffset.value < -40) {
     collapsed.value = false
   } else if (!collapsed.value && dragOffset.value > 40) {
@@ -166,7 +185,6 @@ function onTouchEnd() {
   dragOffset.value = 0
 }
 
-// Binds the exact pixel height to follow your finger
 const wrapperStyle = computed(() => {
   let currentHeight = collapsed.value ? 0 : fullHeight.value
   
