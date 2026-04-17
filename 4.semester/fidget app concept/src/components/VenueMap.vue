@@ -4,7 +4,7 @@
     <Transition name="fade">
       <div v-if="showInstruction" class="map-instruction">
         <span>Tap any room for live density and info</span>
-        <button class="dismiss-btn" @click="showInstruction = false" aria-label="Dismiss">
+        <button class="dismiss-btn" @click="dismissInstruction" aria-label="Dismiss">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
             <line x1="18" y1="6" x2="6" y2="18"/>
             <line x1="6" y1="6" x2="18" y2="18"/>
@@ -79,13 +79,19 @@
   </div>
 </template>
 
-<script setup>
+<script>
 import { ref } from 'vue'
+const showInstruction = ref(true)
+</script>
+
+<script setup>
 import { mapFloors } from '../data/mapData.js'
 
 defineEmits(['open-room'])
 
-const showInstruction = ref(true)
+function dismissInstruction() {
+  showInstruction.value = false
+}
 
 function getBusyColor(busyState) {
   if (busyState === 'low') return '#cad2c5' 
@@ -95,11 +101,7 @@ function getBusyColor(busyState) {
 </script>
 
 <style scoped>
-.map-container {
-  padding: 16px 16px;
-  display: flex;
-  flex-direction: column;
-}
+.map-container { padding: 16px 16px; display: flex; flex-direction: column; }
 
 .map-instruction {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
@@ -126,7 +128,6 @@ function getBusyColor(busyState) {
 .legend-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: var(--text-main); }
 .user-loc { justify-content: flex-start; }
 
-/* New formatting for Amount of People text */
 .legend-density { display: flex; flex-direction: column; gap: 6px; }
 .density-label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
