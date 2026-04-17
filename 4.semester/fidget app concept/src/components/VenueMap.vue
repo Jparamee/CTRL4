@@ -1,6 +1,14 @@
 <template>
   <div class="map-container">
 
+    <div class="location-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+        <circle cx="12" cy="10" r="3"></circle>
+      </svg>
+      {{ museumName }}
+    </div>
+
     <Transition name="fade">
       <div v-if="showInstruction" class="map-instruction">
         <span>Tap any room for live density and info</span>
@@ -82,10 +90,14 @@
 <script setup>
 import { ref } from 'vue'
 
-// The component now accepts the dynamic 'floors' array from App.vue
 defineProps({
   floors: {
     type: Array,
+    required: true
+  },
+  // NEW: Expect the museum name from App.vue
+  museumName: {
+    type: String,
     required: true
   }
 })
@@ -99,7 +111,7 @@ try {
     initialShow = false
   }
 } catch (e) {
-  // Ignore error if phone blocks localStorage
+  // Ignore error
 }
 
 const showInstruction = ref(initialShow)
@@ -120,6 +132,21 @@ function getBusyColor(busyState) {
 
 <style scoped>
 .map-container { padding: 16px 16px; display: flex; flex-direction: column; }
+
+/* THE NEW LOCATION BADGE STYLES */
+.location-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--primary-light);
+  color: var(--text-main);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  align-self: flex-start;
+}
 
 .map-instruction {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;

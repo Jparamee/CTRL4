@@ -13,6 +13,7 @@
       <VenueMap 
         v-if="activeTab === 'map'" 
         :floors="currentMuseumFloors"
+        :museumName="currentMuseumName"
         @open-room="openModal" 
       />
     </main>
