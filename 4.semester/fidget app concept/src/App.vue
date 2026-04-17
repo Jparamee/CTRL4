@@ -79,6 +79,10 @@ function closeModal() {
 }
 
 .app {
+/* Add these two lines to disable text highlighting */
+  -webkit-user-select: none; 
+  user-select: none;
+
   --bg-color: #f4f6f8;
   --surface: #ffffff;
   --text-main: #2c3e50;

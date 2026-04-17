@@ -1,7 +1,6 @@
 <template>
   <div class="settings-container">
 
-    <!-- Two toggles side by side at the top -->
     <div class="toggles-row">
       <div class="toggle-card">
         <div class="icon-wrap">
@@ -12,7 +11,7 @@
           </svg>
         </div>
         <div class="text-wrap">
-          <span class="setting-label">Noise Suppress.</span>
+          <span class="setting-label">Noise Suppression</span>
           <span class="setting-sub">{{ noiseSuppression ? 'Active' : 'Off' }}</span>
         </div>
         <label class="toggle">
@@ -40,7 +39,6 @@
       </div>
     </div>
 
-    <!-- Sliders -->
     <div class="sliders-card">
       <div class="setting-row-slider">
         <div class="setting-info-group slider-header">
@@ -92,13 +90,18 @@
   </div>
 </template>
 
-<script setup>
+<script>
 import { ref } from 'vue'
 
 const noiseSuppression = ref(true)
-const themeMusic = ref(45)
-const audioGuide = ref(60)
 const crowdWarning = ref(true)
+// Default set to 50
+const themeMusic = ref(50)
+const audioGuide = ref(50)
+</script>
+
+<script setup>
+// The variables above are automatically available here and in the template
 </script>
 
 <style scoped>
