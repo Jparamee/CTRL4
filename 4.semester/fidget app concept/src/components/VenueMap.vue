@@ -30,7 +30,7 @@
       </div>
     </div>
 
-    <div v-for="floor in mapFloors" :key="floor.id" class="floor-section">
+    <div v-for="floor in floors" :key="floor.id" class="floor-section">
       <h2 class="floor-title">{{ floor.title }}</h2>
       
       <svg class="floor-plan-detailed" viewBox="0 0 320 200" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -79,18 +79,36 @@
   </div>
 </template>
 
-<script>
-import { ref } from 'vue'
-const showInstruction = ref(true)
-</script>
-
 <script setup>
-import { mapFloors } from '../data/mapData.js'
+import { ref } from 'vue'
+
+// The component now accepts the dynamic 'floors' array from App.vue
+defineProps({
+  floors: {
+    type: Array,
+    required: true
+  }
+})
 
 defineEmits(['open-room'])
 
+// Safely check memory without crashing strict browsers
+let initialShow = true
+try {
+  if (localStorage.getItem('audioverse_hide_instruction') === 'true') {
+    initialShow = false
+  }
+} catch (e) {
+  // Ignore error if phone blocks localStorage
+}
+
+const showInstruction = ref(initialShow)
+
 function dismissInstruction() {
   showInstruction.value = false
+  try {
+    localStorage.setItem('audioverse_hide_instruction', 'true')
+  } catch (e) { }
 }
 
 function getBusyColor(busyState) {
