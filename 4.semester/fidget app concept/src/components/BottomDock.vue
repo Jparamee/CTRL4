@@ -27,12 +27,14 @@
         />
         
         <div class="transport">
-          <button class="tbtn" @click="skip(-15)">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button class="tbtn skip-btn" @click="skip(-15)">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="1 4 1 10 7 10"/>
               <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+              <text x="12" y="16.5" text-anchor="middle" stroke="none" fill="currentColor" font-size="7.5" font-family="'DM Sans', sans-serif" font-weight="700">15</text>
             </svg>
           </button>
+          
           <button class="tbtn play" @click="togglePlay">
             <svg v-if="!playing" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
               <polygon points="6 4 20 12 6 20 6 4"/>
@@ -42,10 +44,12 @@
               <line x1="16" y1="5" x2="16" y2="19"/>
             </svg>
           </button>
-          <button class="tbtn" @click="skip(15)">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          
+          <button class="tbtn skip-btn" @click="skip(15)">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="23 4 23 10 17 10"/>
               <path d="M20.49 15a9 9 0 1 1-.49-3.5"/>
+              <text x="12" y="16.5" text-anchor="middle" stroke="none" fill="currentColor" font-size="7.5" font-family="'DM Sans', sans-serif" font-weight="700">15</text>
             </svg>
           </button>
         </div>
@@ -95,7 +99,8 @@ const playbackPos = ref(266)
 const playing = ref(false)
 const collapsed = ref(false)
 const speed = ref(1)
-const speeds = [0.75, 1, 1.25, 1.5]
+// Added 2 to the speeds array!
+const speeds = [0.75, 1, 1.25, 1.5, 2] 
 let timer = null
 let wasPlayingBeforeSeek = false
 
@@ -193,12 +198,21 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   cursor: pointer; transition: transform 0.1s;
 }
 .slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
 .playback-slider { margin-bottom: 18px; }
 
-.transport { display: flex; justify-content: center; align-items: center; gap: 40px; margin-bottom: 14px; }
+/* Transport alignment fixed */
+.transport { 
+  display: flex; justify-content: center; align-items: center; gap: 42px; 
+  margin-bottom: 14px; 
+}
 .tbtn {
   background: none; border: none; cursor: pointer; color: var(--text-main);
-  display: flex; align-items: center; justify-content: center; transition: transform 0.1s, opacity 0.2s; padding: 4px;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.1s, opacity 0.2s; padding: 4px;
+}
+.skip-btn {
+  margin-top: 2px; /* finely tunes alignment next to the larger play button */
 }
 .tbtn:hover { opacity: 0.7; }
 .tbtn:active { transform: scale(0.9); }
@@ -209,7 +223,8 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 .tbtn.play:hover { opacity: 1; transform: scale(1.05); }
 .tbtn.play:active { transform: scale(0.95); }
 
-.speed-row { display: flex; align-items: center; gap: 10px; }
+.speed-row { display: flex; align-items: center; gap: 10px; overflow-x: auto; scrollbar-width: none; }
+.speed-row::-webkit-scrollbar { display: none; }
 .speed-label { font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
 .speed-chips { display: flex; gap: 6px; }
 .speed-chip {
@@ -227,8 +242,6 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   background: var(--bg-color); font-family: inherit; font-size: 15px; font-weight: 600;
   color: var(--text-muted); cursor: pointer; transition: all 0.2s ease;
 }
-
-/* Swapped to var(--surface) so text dynamically changes with light/dark themes */
 .nav-tab.active { background: var(--text-main); color: var(--surface); border-color: var(--text-main); }
 .nav-tab:not(.active):hover { background: var(--primary-light); color: var(--text-main); }
 </style>
