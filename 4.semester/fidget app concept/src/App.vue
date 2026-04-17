@@ -1,10 +1,10 @@
 <template>
-  <div class="app" :class="{ 'dark-mode': isDark }">
+  <div class="app" :class="{ dark: darkMode }">
     <AppHeader 
       :activeTab="activeTab" 
-      :isDark="isDark"
+      :darkMode="darkMode" 
       @switch-tab="switchTab" 
-      @toggle-dark="isDark = !isDark"
+      @toggle-dark="toggleDarkMode" 
     />
 
     <main class="main-content-scroll">
@@ -37,7 +37,7 @@ import BottomDock from './components/BottomDock.vue'
 const activeTab = ref('map')
 const modalActive = ref(false)
 const selectedRoom = ref(null)
-const isDark = ref(false) // New Dark Mode State
+const darkMode = ref(false)
 
 function switchTab(tabName) {
   activeTab.value = tabName
@@ -53,10 +53,14 @@ function closeModal() {
   modalActive.value = false
   selectedRoom.value = null
 }
+
+// Dedicated function ensures the ref updates properly across components
+function toggleDarkMode() {
+  darkMode.value = !darkMode.value
+}
 </script>
 
 <style>
-/* Global unscoped styles */
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
 
 *, *::before, *::after { 
@@ -66,7 +70,6 @@ function closeModal() {
 }
 
 .app {
-  /* Light Mode Variables */
   --bg-color: #f4f6f8;
   --surface: #ffffff;
   --text-main: #2c3e50;
@@ -74,7 +77,6 @@ function closeModal() {
   --primary: #52796f; 
   --primary-light: #cad2c5;
   --border: #e2e8f0;
-  --shadow: rgba(0,0,0,0.08);
   
   font-family: 'DM Sans', sans-serif;
   background: var(--bg-color);
@@ -90,16 +92,15 @@ function closeModal() {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Dark Mode Variables */
-.app.dark-mode {
-  --bg-color: #121212;
-  --surface: #1e1e1e;
-  --text-main: #e0e0e0;
-  --text-muted: #9e9e9e;
-  --primary: #82ac97; 
-  --primary-light: #52796f;
-  --border: #333333;
-  --shadow: rgba(0,0,0,0.3);
+/* Dark mode overrides */
+.app.dark {
+  --bg-color: #1c1f26;
+  --surface: #252830;
+  --text-main: #dde2dd;
+  --text-muted: #7a8a86;
+  --primary: #6aaa98;
+  --primary-light: #384a44;
+  --border: #333840;
 }
 
 .main-content-scroll {
@@ -107,11 +108,10 @@ function closeModal() {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  /* Hide Scrollbar */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 .main-content-scroll::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
+  display: none;
 }
 </style>
