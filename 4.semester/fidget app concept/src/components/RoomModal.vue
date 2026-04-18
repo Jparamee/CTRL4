@@ -25,10 +25,11 @@
             <h4 class="section-title">{{ t('Crowd Size', 'Besøgende', 'Besuchermenge') }}</h4>
           </div>
           <p class="crowd-amount">{{ t('People present:', 'Tilstedeværende:', 'Anwesende Personen:') }} <strong>{{ room.population }}</strong></p>
-          <div class="segmented-control">
-            <button class="segment" :class="{ active: room.busy === 'low' }">{{ t('Low', 'Lav', 'Niedrig') }}</button>
-            <button class="segment" :class="{ active: room.busy === 'med' }">{{ t('Medium', 'Medium', 'Mittel') }}</button>
-            <button class="segment" :class="{ active: room.busy === 'high' }">{{ t('High', 'Høj', 'Hoch') }}</button>
+          
+          <div class="status-indicators">
+            <div class="indicator low" :class="{ active: room.busy === 'low' }">{{ t('Low', 'Lav', 'Niedrig') }}</div>
+            <div class="indicator med" :class="{ active: room.busy === 'med' }">{{ t('Medium', 'Medium', 'Mittel') }}</div>
+            <div class="indicator high" :class="{ active: room.busy === 'high' }">{{ t('High', 'Høj', 'Hoch') }}</div>
           </div>
         </div>
 
@@ -70,7 +71,6 @@ defineEmits(['close'])
 </script>
 
 <style scoped>
-/* YOUR EXACT CSS REMAINS UNTOUCHED */
 .modal-overlay {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
   background: rgba(44, 62, 80, 0.45);
@@ -91,7 +91,7 @@ defineEmits(['close'])
 }
 
 .modal-content h2, 
-.modal-content h3, /* Added h3 here just in case! */
+.modal-content h3, 
 .modal-content p, 
 .modal-content span {
   word-wrap: break-word;
@@ -132,16 +132,46 @@ defineEmits(['close'])
 
 .crowd-amount { font-size: 14px; color: var(--text-main); }
 
-.segmented-control {
-  display: flex; background: var(--bg-color); border-radius: 12px; padding: 4px; gap: 4px;
+/* --- UPDATED STATUS INDICATOR CSS (METER STYLE) --- */
+.status-indicators {
+  display: flex; 
+  gap: 6px; 
 }
-.segment {
-  flex: 1; padding: 9px; border-radius: 9px; border: none; background: none;
-  font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text-muted);
-  cursor: default; transition: all 0.2s ease;
+
+.indicator {
+  flex: 1; 
+  padding: 8px; 
+  border-radius: 8px; 
+  background: transparent; 
+  text-align: center;
+  font-size: 13px; 
+  font-weight: 600; 
+  color: var(--text-muted);
+  opacity: 0.5; 
+  transition: all 0.2s ease;
 }
-.segment.active {
-  background: var(--surface); color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+
+.indicator.active {
+  opacity: 1; 
+}
+
+/* --- UNIFIED LEGEND COLORS (Matches map perfectly in both modes!) --- */
+.indicator.low.active,
+:global(.app.dark) .indicator.low.active {
+  background: #cad2c5; 
+  color: #121212; /* Dark text for readability on the light sage */
+}
+
+.indicator.med.active,
+:global(.app.dark) .indicator.med.active {
+  background: #82ac97; 
+  color: #121212; 
+}
+
+.indicator.high.active,
+:global(.app.dark) .indicator.high.active {
+  background: #52796f; 
+  color: #ffffff; /* White text for contrast on the dark teal */
 }
 
 .divider { height: 1px; background: var(--border); }

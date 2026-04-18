@@ -1,13 +1,40 @@
 <template>
   <div class="map-container">
 
-    <div class="location-badge">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-        <circle cx="12" cy="10" r="3"></circle>
+    <!-- Location badge — always tappable to switch museum -->
+    <button 
+      class="location-badge"
+      :class="{ 'no-location': locationStatus !== 'granted' }"
+      @click="$emit('open-museum-picker')"
+      :aria-label="locationStatus !== 'granted' ? 'Select a museum' : 'Switch museum'"
+    >
+      <!-- Location OFF icon (crossed out) -->
+      <svg v-if="locationStatus !== 'granted' && locationStatus !== 'pending'" 
+        width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+        <circle cx="12" cy="10" r="3"/>
+        <line x1="2" y1="2" x2="22" y2="22"/>
       </svg>
-      {{ museumName }}
-    </div>
+
+      <!-- Loading / pending spinner dots -->
+      <span v-else-if="locationStatus === 'pending'" class="pending-dots">
+        <span></span><span></span><span></span>
+      </span>
+
+      <!-- Normal location icon (active GPS) -->
+      <svg v-else 
+        width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+        <circle cx="12" cy="10" r="3"/>
+      </svg>
+
+      <span class="badge-label">{{ museumName }}</span>
+
+      <!-- Chevron hint that it's tappable -->
+      <svg class="badge-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </button>
 
     <Transition name="fade">
       <div v-if="showInstruction" class="map-instruction">
@@ -37,6 +64,19 @@
           <span class="scale-item high"><span class="legend-dot"></span> {{ t('High', 'Høj', 'Hoch') }}</span>
         </div>
       </div>
+    </div>
+
+    <!-- Empty state when no museum is selected and location is denied -->
+    <div v-if="floors.length === 0 && locationStatus !== 'granted' && locationStatus !== 'pending'" class="empty-map-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <p class="empty-map-title">No museum selected</p>
+      <p class="empty-map-sub">Tap the badge above to search for a museum near you.</p>
+      <button class="empty-search-btn" @click="$emit('open-museum-picker')">
+        Search for a Museum
+      </button>
     </div>
 
     <div v-for="floor in floors" :key="floor.id" class="floor-section">
@@ -92,8 +132,6 @@
 
 <script setup>
 import { ref } from 'vue'
-
-// IMPORT THE NEW LANGUAGE STORE
 import { t } from '../langStore.js'
 
 defineProps({
@@ -104,19 +142,21 @@ defineProps({
   museumName: {
     type: String,
     required: true
+  },
+  locationStatus: {
+    type: String,
+    default: 'pending' // 'pending' | 'granted' | 'denied' | 'unavailable'
   }
 })
 
-defineEmits(['open-room'])
+defineEmits(['open-room', 'open-museum-picker'])
 
 let initialShow = true
 try {
   if (localStorage.getItem('audioverse_hide_instruction') === 'true') {
     initialShow = false
   }
-} catch (e) {
-  // Ignore error
-}
+} catch (e) {}
 
 const showInstruction = ref(initialShow)
 
@@ -124,7 +164,7 @@ function dismissInstruction() {
   showInstruction.value = false
   try {
     localStorage.setItem('audioverse_hide_instruction', 'true')
-  } catch (e) { }
+  } catch (e) {}
 }
 
 function getBusyColor(busyState) {
@@ -135,21 +175,87 @@ function getBusyColor(busyState) {
 </script>
 
 <style scoped>
-.map-container { padding: 16px 16px; display: flex; flex-direction: column; }
+.map-container { 
+  padding: 16px 16px; 
+  display: flex; 
+  flex-direction: column;
+  /* Explicit background - never rely on inheritance for this */
+  background: var(--bg-color);
+  min-height: 100%;
+}
 
+/* Badge is now a <button> — tappable to switch museum */
 .location-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   background: var(--primary-light);
   color: var(--text-main);
-  padding: 6px 12px;
+  padding: 7px 12px;
   border-radius: 20px;
   font-size: 13px;
   font-weight: 700;
   margin-bottom: 12px;
   align-self: flex-start;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
 }
+.location-badge:active { transform: scale(0.96); opacity: 0.8; }
+
+/* When location is off — slightly different styling to signal the state */
+.location-badge.no-location {
+  background: var(--bg-color);
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+.badge-label { flex: 1; }
+
+.badge-chevron {
+  color: var(--text-muted);
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+/* Pending dots animation */
+.pending-dots {
+  display: flex; align-items: center; gap: 3px;
+}
+.pending-dots span {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--text-muted);
+  animation: dot-pulse 1.2s ease-in-out infinite;
+}
+.pending-dots span:nth-child(2) { animation-delay: 0.2s; }
+.pending-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dot-pulse {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+/* Empty state when no museum chosen and location is off */
+.empty-map-state {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 48px 24px; text-align: center;
+  color: var(--text-muted);
+}
+.empty-map-title {
+  font-size: 18px; font-weight: 700; color: var(--text-main); margin-top: 4px;
+}
+.empty-map-sub {
+  font-size: 14px; color: var(--text-muted); line-height: 1.5; max-width: 240px;
+}
+.empty-search-btn {
+  margin-top: 8px; padding: 13px 24px; border-radius: 14px;
+  background: var(--text-main); color: var(--surface);
+  border: none; font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.empty-search-btn:active { transform: scale(0.96); opacity: 0.85; }
 
 .map-instruction {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
