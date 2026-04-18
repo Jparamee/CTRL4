@@ -3,23 +3,45 @@ import { ref, watch } from 'vue'
 export const isPlaying = ref(false)
 export const currentTime = ref(0)
 export const duration = ref(100) 
-export const playbackSpeed = ref(1)
-export const themeVolume = ref(50)
-export const voiceVolume = ref(50)
+
+// 1. LOAD SAVED PREFERENCES (Defaults to 1x speed, 50% volume if nothing is saved)
+export const playbackSpeed = ref(Number(localStorage.getItem('av_speed')) || 1)
+export const themeVolume = ref(Number(localStorage.getItem('av_theme_vol')) || 50)
+export const voiceVolume = ref(Number(localStorage.getItem('av_voice_vol')) || 50)
+
+// 2. SAVE PREFERENCES WHENEVER SLIDERS ARE MOVED
+watch(themeVolume, (v) => localStorage.setItem('av_theme_vol', v))
+watch(voiceVolume, (v) => localStorage.setItem('av_voice_vol', v))
+watch(playbackSpeed, (v) => localStorage.setItem('av_speed', v))
 
 const voiceTrack = new Audio('audio/christianSnakkerSort.mp3')
 const themeTrack = new Audio('audio/softpop muzak.mp3')
 themeTrack.loop = true 
+
+// 3. LOAD SAVED AUDIO POSITION
+const savedPosition = localStorage.getItem('av_position')
+if (savedPosition) {
+  voiceTrack.currentTime = Number(savedPosition)
+  currentTime.value = Number(savedPosition)
+}
 
 let isFading = false // Keeps the sliders from breaking the fade!
 let fadeInterval = null
 
 voiceTrack.addEventListener('timeupdate', () => {
   currentTime.value = voiceTrack.currentTime
+  // 4. SAVE AUDIO POSITION CONSTANTLY AS IT PLAYS
+  localStorage.setItem('av_position', voiceTrack.currentTime)
 })
+
 voiceTrack.addEventListener('loadedmetadata', () => {
   duration.value = voiceTrack.duration
+  // Safety check: Re-apply saved position just in case the browser resets it when loading metadata
+  if (savedPosition) {
+    voiceTrack.currentTime = Number(savedPosition)
+  }
 })
+
 voiceTrack.addEventListener('ended', () => {
   isPlaying.value = false
 })
@@ -54,7 +76,7 @@ watch(voiceVolume, (vol) => {
 
 watch(playbackSpeed, (speed) => { 
   voiceTrack.playbackRate = speed 
-})
+}, { immediate: true })
 
 // THE FADE TRANSITION LOGIC
 export function changeRoomTheme(audioFileName) {
@@ -115,8 +137,10 @@ export function changeRoomTheme(audioFileName) {
 
 export function skipAudio(amount) {
   voiceTrack.currentTime = Math.max(0, Math.min(voiceTrack.duration, voiceTrack.currentTime + amount))
+  localStorage.setItem('av_position', voiceTrack.currentTime) // Instantly save on skip
 }
 
 export function seekAudio(seconds) {
   voiceTrack.currentTime = seconds
+  localStorage.setItem('av_position', voiceTrack.currentTime) // Instantly save on seek
 }

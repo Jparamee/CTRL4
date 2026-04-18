@@ -82,14 +82,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { themeVolume, voiceVolume } from '../audioStore.js'
-
-// We only need the translation function here now! 
 import { t } from '../langStore.js'
 
-const noiseSuppression = ref(true)
-const crowdWarning = ref(true)
+// Load from storage (they default to true if nothing is saved)
+const noiseSuppression = ref(localStorage.getItem('av_noise') !== 'false')
+const crowdWarning = ref(localStorage.getItem('av_crowd') !== 'false')
+
+// Save to storage when clicked
+watch(noiseSuppression, (val) => localStorage.setItem('av_noise', val))
+watch(crowdWarning, (val) => localStorage.setItem('av_crowd', val))
 </script>
 
 <style scoped>

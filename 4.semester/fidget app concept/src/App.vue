@@ -34,11 +34,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+// 1. ADDED 'watch' TO THIS IMPORT!
+import { ref, watch, onMounted } from 'vue'
 import { Geolocation } from '@capacitor/geolocation'
 import { museums } from './data/mapData.js'
 
-// NEW: Import our audio swapper function
 import { changeRoomTheme } from './audioStore.js'
 
 import AppHeader from './components/AppHeader.vue'
@@ -51,8 +51,30 @@ import WelcomeModal from './components/WelcomeModal.vue'
 const activeTab = ref('map')
 const modalActive = ref(false)
 const selectedRoom = ref(null)
-const darkMode = ref(false)
-const showWelcome = ref(true)
+
+// --- MEMORY UPGRADES START ---
+
+// 2. LOAD DARK MODE: Checks storage, defaults to false if empty
+const darkMode = ref(localStorage.getItem('av_dark_mode') === 'true')
+
+// Save dark mode whenever it is toggled!
+watch(darkMode, (isDark) => {
+  localStorage.setItem('av_dark_mode', isDark)
+  // This automatically updates the body class so the colors flip immediately on load
+  if (isDark) document.documentElement.classList.add('dark')
+  else document.documentElement.classList.remove('dark')
+}, { immediate: true })
+
+// 3. LOAD WELCOME MODAL: Only shows if 'av_hide_welcome' is NOT 'true'
+const showWelcome = ref(localStorage.getItem('av_hide_welcome') !== 'true')
+
+function dismissWelcome() { 
+  showWelcome.value = false 
+  // Save to storage so it never pops up again!
+  localStorage.setItem('av_hide_welcome', 'true')
+}
+
+// --- MEMORY UPGRADES END ---
 
 const currentMuseumName = ref(museums['natural-history'].name)
 const currentMuseumFloors = ref(museums['natural-history'].floors)
@@ -102,7 +124,6 @@ onMounted(() => {
   locateUser()
 })
 
-function dismissWelcome() { showWelcome.value = false }
 function switchTab(tabName) { activeTab.value = tabName; closeModal() }
 
 // THE MAGIC HAPPENS HERE:

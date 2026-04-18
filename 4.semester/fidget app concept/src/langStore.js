@@ -1,10 +1,14 @@
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
-// The global language state (Defaults to English)
-export const currentLang = ref('en')
+// 1. Check phone storage FIRST, default to 'en' if nothing is saved
+const savedLang = localStorage.getItem('audioverse_lang') || 'en'
+export const currentLang = ref(savedLang)
 
-// A super simple translation helper function!
-// It takes 3 words: (English, Danish, German) and returns the right one.
+// 2. Automatically save to phone storage whenever it changes
+watch(currentLang, (newLang) => {
+  localStorage.setItem('audioverse_lang', newLang)
+})
+
 export function t(en, da, de) {
   if (currentLang.value === 'da') return da || en
   if (currentLang.value === 'de') return de || en
