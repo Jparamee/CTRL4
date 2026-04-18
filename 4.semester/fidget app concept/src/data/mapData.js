@@ -1,8 +1,8 @@
 export const museums = {
   "natural-history": {
     name: "Natural History Museum",
-    lat: 56.1661, 
-    lng: 10.2016,
+    lat: 56.175694675257645, 
+    lng: 10.1364725182567,
     floors: [
       { id: 'floor3', title: 'Level 3 - Imagine This', user_loc: null, rooms: [
         { id: 'vr_imagine', label: 'Imagine This (VR)', x: 20, y: 20, w: 280, h: 160, shapeClass: 'room-main-shape', busy: 'med', trigger_warnings: ['Flashing lights (VR)', 'Motion sickness'], population: 24, doors: [{id: 'd3_main', x: 150, y: 179, w: 20, h: 2}], 
@@ -35,8 +35,8 @@ export const museums = {
   },
   "aros": {
     name: "ARoS Art Museum",
-    lat: 56.1539,
-    lng: 10.1996,
+    lat: 56.17386486849571,
+    lng: 10.122709514727974,
     floors: [
       { id: 'aros_f1', title: 'Level 10', user_loc: {x: 160, y: 50}, rooms: [
         { id: 'rainbow', label: 'Your rainbow panorama', x: 20, y: 20, w: 280, h: 60, shapeClass: 'room-main-shape', busy: 'high', trigger_warnings: ['Bright colors', 'Sunlight exposure'], population: 85, doors: [{id: 'r_d1', x: 150, y: 79, w: 20, h: 2}], themeAudio: 'softpop muzak.mp3' },

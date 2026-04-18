@@ -34,8 +34,8 @@
 </template>
 
 <script setup>
-// 1. ADDED 'watch' TO THIS IMPORT!
-import { ref, watch, onMounted } from 'vue'
+// ADDED 'onUnmounted' so we can turn off GPS when the app closes
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { Geolocation } from '@capacitor/geolocation'
 import { museums } from './data/mapData.js'
 
@@ -53,31 +53,24 @@ const modalActive = ref(false)
 const selectedRoom = ref(null)
 
 // --- MEMORY UPGRADES START ---
-
-// 2. LOAD DARK MODE: Checks storage, defaults to false if empty
 const darkMode = ref(localStorage.getItem('av_dark_mode') === 'true')
 
-// Save dark mode whenever it is toggled!
 watch(darkMode, (isDark) => {
   localStorage.setItem('av_dark_mode', isDark)
-  // This automatically updates the body class so the colors flip immediately on load
   if (isDark) document.documentElement.classList.add('dark')
   else document.documentElement.classList.remove('dark')
 }, { immediate: true })
 
-// 3. LOAD WELCOME MODAL: Only shows if 'av_hide_welcome' is NOT 'true'
 const showWelcome = ref(localStorage.getItem('av_hide_welcome') !== 'true')
 
 function dismissWelcome() { 
   showWelcome.value = false 
-  // Save to storage so it never pops up again!
   localStorage.setItem('av_hide_welcome', 'true')
 }
-
 // --- MEMORY UPGRADES END ---
 
-const currentMuseumName = ref(museums['natural-history'].name)
-const currentMuseumFloors = ref(museums['natural-history'].floors)
+const currentMuseumName = ref('Locating museum...')
+const currentMuseumFloors = ref([])
 
 function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; 
@@ -90,48 +83,70 @@ function getDistance(lat1, lon1, lat2, lon2) {
   return R * c; 
 }
 
-async function locateUser() {
+// --- CONTINUOUS GPS TRACKING ---
+let gpsWatchId = null;
+
+async function startTracking() {
   try {
     const permissions = await Geolocation.requestPermissions();
     if (permissions.location !== 'granted') return; 
 
-    const coordinates = await Geolocation.getCurrentPosition();
-    const userLat = coordinates.coords.latitude;
-    const userLng = coordinates.coords.longitude;
-
-    let closestMuseum = null;
-    let shortestDistance = Infinity;
-
-    for (const key in museums) {
-      const museum = museums[key];
-      const distance = getDistance(userLat, userLng, museum.lat, museum.lng);
-      if (distance < shortestDistance) {
-        shortestDistance = distance;
-        closestMuseum = museum;
+    // watchPosition fires EVERY TIME the phone's GPS detects movement
+    gpsWatchId = await Geolocation.watchPosition({
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    }, (position, err) => {
+      if (err) {
+        console.error("GPS Error:", err);
+        return;
       }
-    }
+      if (!position) return;
 
-    if (closestMuseum) {
-      currentMuseumName.value = closestMuseum.name;
-      currentMuseumFloors.value = closestMuseum.floors;
-    }
+      const userLat = position.coords.latitude;
+      const userLng = position.coords.longitude;
+
+      let closestMuseum = null;
+      let shortestDistance = Infinity;
+
+      for (const key in museums) {
+        const museum = museums[key];
+        const distance = getDistance(userLat, userLng, museum.lat, museum.lng);
+        if (distance < shortestDistance) {
+          shortestDistance = distance;
+          closestMuseum = museum;
+        }
+      }
+
+      // ONLY swap the UI if the closest museum has actually changed!
+      if (closestMuseum && currentMuseumName.value !== closestMuseum.name) {
+        currentMuseumName.value = closestMuseum.name;
+        currentMuseumFloors.value = closestMuseum.floors;
+      }
+    });
+
   } catch (error) {
-    console.error("GPS Error:", error);
+    console.error("GPS Tracking Error:", error);
   }
 }
 
 onMounted(() => {
-  locateUser()
+  startTracking()
+})
+
+// Good practice: Stop the GPS battery drain if the app is closed
+onUnmounted(() => {
+  if (gpsWatchId != null) {
+    Geolocation.clearWatch({ id: gpsWatchId });
+  }
 })
 
 function switchTab(tabName) { activeTab.value = tabName; closeModal() }
 
-// THE MAGIC HAPPENS HERE:
 function openModal(roomData) { 
   selectedRoom.value = roomData; 
   modalActive.value = true;
   
-  // If the room has specific audio, swap the theme music!
   if (roomData.themeAudio) {
     changeRoomTheme(roomData.themeAudio);
   }
