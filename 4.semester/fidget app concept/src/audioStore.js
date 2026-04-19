@@ -1,146 +1,232 @@
 import { ref, watch } from 'vue'
+import { currentLang } from './langStore.js'
 
-export const isPlaying = ref(false)
-export const currentTime = ref(0)
-export const duration = ref(100) 
+// ─────────────────────────────────────────────
+//  GUIDE TRACK STATE
+// ─────────────────────────────────────────────
+export const guideIsPlaying   = ref(false)
+export const guideCurrentTime = ref(0)
+export const guideDuration    = ref(0)
 
-// 1. LOAD SAVED PREFERENCES (Defaults to 1x speed, 50% volume if nothing is saved)
+// ─────────────────────────────────────────────
+//  THEME TRACK STATE
+// ─────────────────────────────────────────────
+export const themeIsPlaying   = ref(false)
+export const currentRoomName  = ref('')
+export const currentThemeFile = ref('')
+
+// ─────────────────────────────────────────────
+//  SHARED SETTINGS (persisted)
+// ─────────────────────────────────────────────
 export const playbackSpeed = ref(Number(localStorage.getItem('av_speed')) || 1)
-export const themeVolume = ref(Number(localStorage.getItem('av_theme_vol')) || 50)
-export const voiceVolume = ref(Number(localStorage.getItem('av_voice_vol')) || 50)
+export const themeVolume   = ref(Number(localStorage.getItem('av_theme_vol')) || 50)
+export const voiceVolume   = ref(Number(localStorage.getItem('av_voice_vol')) || 50)
 
-// 2. SAVE PREFERENCES WHENEVER SLIDERS ARE MOVED
-watch(themeVolume, (v) => localStorage.setItem('av_theme_vol', v))
-watch(voiceVolume, (v) => localStorage.setItem('av_voice_vol', v))
+watch(themeVolume,   (v) => localStorage.setItem('av_theme_vol', v))
+watch(voiceVolume,   (v) => localStorage.setItem('av_voice_vol', v))
 watch(playbackSpeed, (v) => localStorage.setItem('av_speed', v))
 
-const voiceTrack = new Audio('audio/christianSnakkerSort.mp3')
-const themeTrack = new Audio('audio/softpop muzak.mp3')
-themeTrack.loop = true 
+// ─────────────────────────────────────────────
+//  GUIDE AUDIO  (language-dependent)
+//
+//  Files are in public/audio/ and served at /audio/
+//    EN → english hyena speak.mp3
+//    DA → christianSnakkerSort.mp3
+//    DE → deutsch Hyänen speak.mp3
+// ─────────────────────────────────────────────
+function getGuideFile(lang) {
+  if (lang === 'da') return 'audio/christianSnakkerSort.mp3'
+  if (lang === 'de') return 'audio/deutsch Hyänen speak.mp3'
+  return 'audio/english hyena speak.mp3'
+}
 
-// 3. LOAD SAVED AUDIO POSITION
+const guideTrack = new Audio(getGuideFile(currentLang.value))
+guideTrack.loop = false
+
 const savedPosition = localStorage.getItem('av_position')
 if (savedPosition) {
-  voiceTrack.currentTime = Number(savedPosition)
-  currentTime.value = Number(savedPosition)
+  guideTrack.currentTime = Number(savedPosition)
+  guideCurrentTime.value = Number(savedPosition)
 }
 
-let isFading = false // Keeps the sliders from breaking the fade!
+guideTrack.addEventListener('timeupdate', () => {
+  guideCurrentTime.value = guideTrack.currentTime
+  localStorage.setItem('av_position', guideTrack.currentTime)
+})
+
+guideTrack.addEventListener('loadedmetadata', () => {
+  guideDuration.value = guideTrack.duration
+  if (savedPosition) guideTrack.currentTime = Number(savedPosition)
+})
+
+guideTrack.addEventListener('ended', () => {
+  // Guide finished — stop guide only. Theme music keeps playing!
+  guideIsPlaying.value = false
+})
+
+// Switch guide track when language changes
+watch(currentLang, (newLang) => {
+  const wasPlaying = guideIsPlaying.value
+  const savedTime  = guideTrack.currentTime
+
+  if (wasPlaying) guideTrack.pause()
+
+  guideTrack.src = getGuideFile(newLang)
+  guideTrack.load()
+
+  guideTrack.addEventListener('loadedmetadata', () => {
+    guideTrack.currentTime = Math.min(savedTime, guideTrack.duration)
+    if (wasPlaying) {
+      guideTrack.play()
+        .then(() => { guideIsPlaying.value = true })
+        .catch(console.error)
+    }
+  }, { once: true })
+})
+
+// ─────────────────────────────────────────────
+//  THEME AUDIO  (room-based, auto-changes via GPS)
+//  All files live in public/audio/
+// ─────────────────────────────────────────────
+const themeTrack = new Audio()
+themeTrack.loop = true
+
+// --- NEW DEFAULT AMBIENT LOGIC ---
+const defaultThemeSrc = 'audio/default_ambient.mp3' 
+
+const savedThemeSrc = localStorage.getItem('av_theme_src')
+if (savedThemeSrc) {
+  themeTrack.src = savedThemeSrc
+  currentThemeFile.value = savedThemeSrc.split('/').pop()
+} else {
+  // If no room is saved, load the default track!
+  themeTrack.src = defaultThemeSrc
+  currentThemeFile.value = 'default_ambient.mp3'
+}
+themeTrack.load()
+
+const savedRoomName = localStorage.getItem('av_room_name')
+if (savedRoomName) currentRoomName.value = savedRoomName
+
+let isFading     = false
 let fadeInterval = null
 
-voiceTrack.addEventListener('timeupdate', () => {
-  currentTime.value = voiceTrack.currentTime
-  // 4. SAVE AUDIO POSITION CONSTANTLY AS IT PLAYS
-  localStorage.setItem('av_position', voiceTrack.currentTime)
-})
+// ─────────────────────────────────────────────
+//  WATCHERS: Volume / Speed sliders → Audio API
+// ─────────────────────────────────────────────
+watch(themeVolume, (vol) => {
+  if (!isFading) themeTrack.volume = vol / 100
+}, { immediate: true })
 
-voiceTrack.addEventListener('loadedmetadata', () => {
-  duration.value = voiceTrack.duration
-  // Safety check: Re-apply saved position just in case the browser resets it when loading metadata
-  if (savedPosition) {
-    voiceTrack.currentTime = Number(savedPosition)
-  }
-})
+watch(voiceVolume, (vol) => {
+  guideTrack.volume = vol / 100
+}, { immediate: true })
 
-voiceTrack.addEventListener('ended', () => {
-  isPlaying.value = false
-})
+watch(playbackSpeed, (speed) => {
+  guideTrack.playbackRate = speed
+}, { immediate: true })
 
-export function togglePlay() {
-  if (isPlaying.value) {
-    voiceTrack.pause()
-    themeTrack.pause()
-    isPlaying.value = false
+// ─────────────────────────────────────────────
+//  GUIDE CONTROLS
+// ─────────────────────────────────────────────
+export function toggleGuide() {
+  if (guideIsPlaying.value) {
+    guideTrack.pause()
+    guideIsPlaying.value = false
   } else {
-    const playPromise = voiceTrack.play()
-    if (playPromise !== undefined) {
-      playPromise.then(() => {
-        themeTrack.play()
-        isPlaying.value = true
-      }).catch(err => {
-        console.error("Audio failed to play:", err)
-      })
-    }
+    guideTrack.play()
+      .then(() => { guideIsPlaying.value = true })
+      .catch((err) => console.error('Guide play failed:', err))
   }
 }
 
-// Watchers for the settings sliders
-watch(themeVolume, (vol) => { 
-  // Only change the volume if we aren't currently fading!
-  if (!isFading) themeTrack.volume = vol / 100 
-}, { immediate: true })
+export function skipGuide(amount) {
+  guideTrack.currentTime = Math.max(
+    0,
+    Math.min(guideTrack.duration || 0, guideTrack.currentTime + amount)
+  )
+  localStorage.setItem('av_position', guideTrack.currentTime)
+}
 
-watch(voiceVolume, (vol) => { 
-  voiceTrack.volume = vol / 100 
-}, { immediate: true })
+export function seekGuide(seconds) {
+  guideTrack.currentTime = seconds
+  localStorage.setItem('av_position', seconds)
+}
 
-watch(playbackSpeed, (speed) => { 
-  voiceTrack.playbackRate = speed 
-}, { immediate: true })
+// ─────────────────────────────────────────────
+//  THEME CONTROLS  (independent toggle)
+// ─────────────────────────────────────────────
+export function toggleTheme() {
+  if (themeIsPlaying.value) {
+    themeTrack.pause()
+    themeIsPlaying.value = false
+  } else {
+    if (!themeTrack.src) return
+    themeTrack.play()
+      .then(() => { themeIsPlaying.value = true })
+      .catch((err) => console.error('Theme play failed:', err))
+  }
+}
 
-// THE FADE TRANSITION LOGIC
-export function changeRoomTheme(audioFileName) {
-  if (!audioFileName) return; 
+// ─────────────────────────────────────────────
+//  CHANGE ROOM THEME  (called from GPS / map tap)
+// ─────────────────────────────────────────────
+export function changeRoomTheme(audioFileName, roomLabel = '') {
+  if (!audioFileName) return
 
-  const newSrc = `audio/${audioFileName}`;
-  
-  // If it's already playing this exact song, do nothing
-  if (themeTrack.src.endsWith(newSrc)) return;
+  const newSrc = `audio/${audioFileName}`
+  currentRoomName.value = roomLabel || currentRoomName.value
+  localStorage.setItem('av_room_name', currentRoomName.value)
+  localStorage.setItem('av_theme_src', newSrc)
+  currentThemeFile.value = audioFileName
 
-  if (isPlaying.value) {
-    // 1. FADE OUT
-    isFading = true;
-    clearInterval(fadeInterval);
-    let currentVol = themeTrack.volume;
+  if (themeTrack.src && themeTrack.src.includes(audioFileName)) return
+
+  if (themeIsPlaying.value) {
+    isFading = true
+    clearInterval(fadeInterval)
+    let vol = themeTrack.volume
 
     fadeInterval = setInterval(() => {
-      currentVol = Math.max(0, currentVol - 0.05); // Drop volume
-      themeTrack.volume = currentVol;
+      vol = Math.max(0, vol - 0.05)
+      themeTrack.volume = vol
 
-      // When fully faded out...
-      if (currentVol <= 0) {
-        clearInterval(fadeInterval);
-        
-        // 2. SWAP SONGS
-        themeTrack.pause();
-        themeTrack.src = newSrc;
-        themeTrack.load();
-        
-        const playPromise = themeTrack.play();
-        if (playPromise !== undefined) {
-          playPromise.then(() => {
-            
-            // 3. FADE IN
-            let targetVol = themeVolume.value / 100;
+      if (vol <= 0) {
+        clearInterval(fadeInterval)
+        themeTrack.pause()
+        themeTrack.src = newSrc
+        themeTrack.load()
+
+        themeTrack.play()
+          .then(() => {
+            let targetVol = themeVolume.value / 100
             fadeInterval = setInterval(() => {
-              currentVol = Math.min(targetVol, currentVol + 0.05); // Raise volume
-              themeTrack.volume = currentVol;
-              
-              if (currentVol >= targetVol) {
-                // Done fading!
-                clearInterval(fadeInterval);
-                isFading = false;
-                themeTrack.volume = themeVolume.value / 100; // Lock to slider setting
+              vol = Math.min(targetVol, vol + 0.05)
+              themeTrack.volume = vol
+              if (vol >= targetVol) {
+                clearInterval(fadeInterval)
+                isFading = false
+                themeTrack.volume = targetVol
               }
-            }, 60); // Speed of fade in
-          }).catch(e => console.log(e));
-        }
+            }, 60)
+          })
+          .catch(console.error)
       }
-    }, 60); // Speed of fade out
+    }, 60)
   } else {
-    // If paused, just swap it instantly without fading
-    themeTrack.src = newSrc;
-    themeTrack.load();
-    themeTrack.volume = themeVolume.value / 100;
+    themeTrack.src = newSrc
+    themeTrack.load()
+    themeTrack.volume = themeVolume.value / 100
   }
 }
 
-export function skipAudio(amount) {
-  voiceTrack.currentTime = Math.max(0, Math.min(voiceTrack.duration, voiceTrack.currentTime + amount))
-  localStorage.setItem('av_position', voiceTrack.currentTime) // Instantly save on skip
-}
+// ─────────────────────────────────────────────
+//  BACKWARD COMPATIBILITY ALIASES
+// ─────────────────────────────────────────────
+export const isPlaying   = guideIsPlaying
+export const currentTime = guideCurrentTime
+export const duration    = guideDuration
 
-export function seekAudio(seconds) {
-  voiceTrack.currentTime = seconds
-  localStorage.setItem('av_position', voiceTrack.currentTime) // Instantly save on seek
-}
+export function togglePlay() { toggleGuide() }
+export function skipAudio(n) { skipGuide(n) }
+export function seekAudio(n) { seekGuide(n) }

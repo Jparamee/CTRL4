@@ -298,11 +298,6 @@ html.dark body {
   transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-/* 
-  DARK MODE 
-  FIX: --primary-light was #52796f (vivid green) — changed to #1e2d27 (very dark, barely-there tint)
-  This fixes the green background appearing on the location badge and hover states in dark mode
-*/
 .app.dark {
   --bg-color: #121212;
   --surface: #1e1e1e;
