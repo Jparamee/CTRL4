@@ -76,8 +76,8 @@
               <button
                 v-for="l in langs" :key="l.code"
                 class="lang-chip"
-                :class="{ active: currentLang === l.code }"
-                @click.stop="currentLang = l.code"
+                :class="{ active: guideLang === l.code }"
+                @click.stop="guideLang = l.code"
               >{{ l.label }}</button>
             </div>
           </div>
@@ -176,10 +176,10 @@ import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import {
   guideIsPlaying, guideCurrentTime, guideDuration, playbackSpeed,
   themeIsPlaying, currentRoomName,
-  toggleGuide, skipGuide, seekGuide, toggleTheme
+  toggleGuide, skipGuide, seekGuide, toggleTheme,
+  guideLang 
 } from '../audioStore.js'
-import { t, currentLang } from '../langStore.js'
-
+import { t } from '../langStore.js' 
 const props = defineProps({ activeTab: String })
 defineEmits(['switch-tab'])
 
