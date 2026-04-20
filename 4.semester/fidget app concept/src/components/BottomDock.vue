@@ -1,6 +1,7 @@
 <template>
   <div class="bottom-dock">
 
+    <!-- ── Drag handle ── -->
     <div class="dock-handle-area"
       @click="toggleCollapse"
       @touchstart="onTouchStart"
@@ -17,48 +18,20 @@
       </svg>
     </div>
 
+    <!-- ── Collapsible section ── -->
     <div class="playback-wrapper" :style="wrapperStyle">
       <div class="playback-section" ref="sectionRef">
 
-        <div class="ambient-row">
-          <div class="ambient-icon-wrap">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 18V5l12-2v13"/>
-              <circle cx="6" cy="18" r="3"/>
-              <circle cx="18" cy="16" r="3"/>
-            </svg>
-          </div>
-
-          <div class="ambient-info">
-            <span class="ambient-label">{{ t('Ambient Music', 'Baggrundsmusik', 'Ambiente Musik') }}</span>
-            <span class="ambient-room" :class="{ 'no-room': !currentRoomName }">
-              {{ currentRoomName || t('Museum Ambiance', 'Museumsstemning', 'Museumsambiente') }}
-            </span>
-          </div>
-
-          <button
-            class="ambient-toggle"
-            :class="{ playing: themeIsPlaying }"
-            @click.stop="toggleTheme"
-            :title="themeIsPlaying
-              ? t('Pause music', 'Pause musik', 'Musik pausieren')
-              : t('Play music', 'Afspil musik', 'Musik abspielen')"
-          >
-            <span v-if="themeIsPlaying" class="music-bars">
-              <span></span><span></span><span></span>
-            </span>
-            <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="6 4 20 12 6 20 6 4"/>
-            </svg>
-          </button>
-        </div>
-
+        <!-- ════════════════════════════════════
+             GUIDE PLAYER CARD
+        ════════════════════════════════════ -->
         <div class="player-card guide-card">
 
+          <!-- Card header: title + language selector -->
           <div class="card-header">
             <div class="card-title-group">
               <div class="card-icon">
+                <!-- headphones -->
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
@@ -72,16 +45,18 @@
               </div>
             </div>
 
+            <!-- Language pills -->
             <div class="lang-chips">
               <button
                 v-for="l in langs" :key="l.code"
                 class="lang-chip"
-                :class="{ active: guideLang === l.code }"
-                @click.stop="guideLang = l.code"
+                :class="{ active: currentLang === l.code }"
+                @click.stop="currentLang = l.code"
               >{{ l.label }}</button>
             </div>
           </div>
 
+          <!-- Progress bar + time -->
           <div class="progress-row">
             <span class="time-label">{{ formatTime(guideCurrentTime) }}</span>
             <input
@@ -97,6 +72,7 @@
             <span class="time-label right">{{ formatTime(guideDuration) }}</span>
           </div>
 
+          <!-- Transport controls -->
           <div class="transport">
             <button class="tbtn" @click.stop="skipGuide(-15)" :title="t('Back 15s', 'Tilbage 15s', '15s zurück')">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -132,6 +108,7 @@
             </button>
           </div>
 
+          <!-- Speed chips -->
           <div class="speed-row">
             <span class="speed-label">{{ t('Speed', 'Hastighed', 'Tempo') }}</span>
             <div class="speed-chips">
@@ -145,7 +122,52 @@
           </div>
         </div>
 
-      </div></div><div class="bottom-nav">
+        <!-- ════════════════════════════════════
+             AMBIENT MUSIC ROW
+        ════════════════════════════════════ -->
+        <div class="ambient-row">
+          <div class="ambient-icon-wrap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18V5l12-2v13"/>
+              <circle cx="6" cy="18" r="3"/>
+              <circle cx="18" cy="16" r="3"/>
+            </svg>
+          </div>
+
+          <div class="ambient-info">
+            <span class="ambient-label">{{ t('Ambient Music', 'Baggrundsmusik', 'Ambiente Musik') }}</span>
+            <span class="ambient-room" :class="{ 'no-room': !currentRoomName }">
+              {{ currentRoomName || t('No room detected yet', 'Intet rum fundet endnu', 'Kein Raum erkannt') }}
+            </span>
+          </div>
+
+          <!-- Music play/pause pill -->
+          <button
+            class="ambient-toggle"
+            :class="{ playing: themeIsPlaying, disabled: !currentRoomName }"
+            @click.stop="toggleTheme"
+            :disabled="!currentRoomName"
+            :title="themeIsPlaying
+              ? t('Pause music', 'Pause musik', 'Musik pausieren')
+              : t('Play music', 'Afspil musik', 'Musik abspielen')"
+          >
+            <!-- Animated bars (playing) -->
+            <span v-if="themeIsPlaying" class="music-bars">
+              <span></span><span></span><span></span>
+            </span>
+            <!-- Play icon (paused) -->
+            <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="6 4 20 12 6 20 6 4"/>
+            </svg>
+          </button>
+        </div>
+
+      </div><!-- /playback-section -->
+    </div><!-- /playback-wrapper -->
+
+    <!-- ── Bottom nav ── -->
+    <div class="bottom-nav">
       <button class="nav-tab" :class="{ active: activeTab === 'map' }"
               @click.stop="$emit('switch-tab', 'map')">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -176,10 +198,10 @@ import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import {
   guideIsPlaying, guideCurrentTime, guideDuration, playbackSpeed,
   themeIsPlaying, currentRoomName,
-  toggleGuide, skipGuide, seekGuide, toggleTheme,
-  guideLang 
+  toggleGuide, skipGuide, seekGuide, toggleTheme
 } from '../audioStore.js'
-import { t } from '../langStore.js' 
+import { t, currentLang } from '../langStore.js'
+
 const props = defineProps({ activeTab: String })
 defineEmits(['switch-tab'])
 
@@ -284,12 +306,27 @@ function resumeAfterSeek() { if (wasPlayingBefore && !guideIsPlaying.value) togg
 /* ── Handle ─────────────────────────────────────────────── */
 .dock-handle-area {
   display: flex; flex-direction: column; align-items: center;
-  gap: 4px; width: 100%; cursor: pointer;
+  gap: 5px; width: 100%; cursor: pointer;
   padding: 12px 0 8px; color: var(--text-muted);
   -webkit-tap-highlight-color: transparent;
 }
-.handle-bar { width: 36px; height: 4px; background: var(--border); border-radius: 4px; }
-.chevron { transition: transform 0.3s cubic-bezier(.4,0,.2,1); }
+.handle-bar {
+  width: 44px; height: 5px;
+  background: var(--primary);
+  border-radius: 4px;
+  opacity: 0.55;
+  transition: opacity 0.2s, width 0.2s;
+}
+.dock-handle-area:hover .handle-bar {
+  opacity: 0.9;
+  width: 52px;
+}
+.chevron {
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+  color: var(--primary);
+  opacity: 0.7;
+}
+.dock-handle-area:hover .chevron { opacity: 1; }
 .chevron.up { transform: rotate(180deg); }
 
 /* ── Player section wrapper ─────────────────────────────── */

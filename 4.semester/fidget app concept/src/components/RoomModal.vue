@@ -66,17 +66,34 @@
           </div>
         </template>
 
-        <!-- ── Ambient music indicator ───────────────────── -->
+        <!-- ── Ambient music ─────────────────────────────── -->
         <template v-if="room.themeAudio">
           <div class="divider"></div>
           <div class="music-row">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 18V5l12-2v13"/>
-              <circle cx="6" cy="18" r="3"/>
-              <circle cx="18" cy="16" r="3"/>
-            </svg>
-            <span>{{ t('Room ambiance will play automatically', 'Rumlyden afspilles automatisk', 'Raumambiente wird automatisch abgespielt') }}</span>
+            <div class="music-row-left">
+              <div class="music-icon-wrap">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 18V5l12-2v13"/>
+                  <circle cx="6" cy="18" r="3"/>
+                  <circle cx="18" cy="16" r="3"/>
+                </svg>
+              </div>
+              <div class="music-text">
+                <span class="music-label">{{ t('Ambient Music', 'Baggrundsmusik', 'Ambiente Musik') }}</span>
+                <span class="music-sub">{{ t('Auto · tap to play now', 'Auto · tryk for at afspille', 'Auto · Tippen zum Abspielen') }}</span>
+              </div>
+            </div>
+            <button class="music-play-btn" @click="playTheme" :class="{ playing: themeIsPlaying }" :aria-label="themeIsPlaying ? 'Pause' : 'Play'">
+              <!-- Animated bars when playing -->
+              <span v-if="themeIsPlaying" class="music-bars">
+                <span></span><span></span><span></span>
+              </span>
+              <!-- Play triangle when paused -->
+              <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="6 4 20 12 6 20 6 4"/>
+              </svg>
+            </button>
           </div>
         </template>
 
@@ -88,6 +105,7 @@
 <script setup>
 import { computed } from 'vue'
 import { t, currentLang } from '../langStore.js'
+import { changeRoomTheme, toggleTheme, themeIsPlaying } from '../audioStore.js'
 
 const props = defineProps({
   room: {
@@ -98,13 +116,20 @@ const props = defineProps({
 
 defineEmits(['close'])
 
-// Pick the right language for the description
 const roomDescription = computed(() => {
   if (!props.room.description) return null
   return props.room.description[currentLang.value]
     || props.room.description.en
     || null
 })
+
+function playTheme() {
+  // Make sure the correct room track is loaded, then toggle play/pause
+  if (props.room.themeAudio) {
+    changeRoomTheme(props.room.themeAudio, props.room.label)
+  }
+  toggleTheme()
+}
 </script>
 
 <style scoped>
@@ -212,9 +237,59 @@ const roomDescription = computed(() => {
   border-left: 3px solid var(--primary-light);
 }
 
-/* ── Ambient music note ────────────────────────────────── */
+/* ── Ambient music row ─────────────────────────────────── */
 .music-row {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 12px; color: var(--text-muted); font-weight: 500;
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 10px;
+}
+.music-row-left {
+  display: flex; align-items: center; gap: 10px; min-width: 0;
+}
+.music-icon-wrap {
+  width: 30px; height: 30px; flex-shrink: 0;
+  background: var(--primary-light);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary);
+}
+.music-text {
+  display: flex; flex-direction: column; gap: 1px; min-width: 0;
+}
+.music-label {
+  font-size: 13px; font-weight: 700; color: var(--text-main);
+}
+.music-sub {
+  font-size: 11px; color: var(--text-muted);
+}
+.music-play-btn {
+  width: 34px; height: 34px; flex-shrink: 0;
+  border-radius: 10px;
+  border: 1.5px solid var(--primary);
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.18s ease;
+}
+.music-play-btn.playing {
+  background: var(--primary);
+  color: #fff;
+}
+.music-play-btn:hover { transform: scale(1.08); }
+.music-play-btn:active { transform: scale(0.94); }
+
+.music-bars {
+  display: flex; align-items: flex-end; gap: 2px; height: 13px;
+}
+.music-bars span {
+  width: 3px; border-radius: 2px; background: currentColor;
+  animation: bar-bounce 0.8s ease-in-out infinite;
+}
+.music-bars span:nth-child(1) { height: 7px;  animation-delay: 0s; }
+.music-bars span:nth-child(2) { height: 13px; animation-delay: 0.15s; }
+.music-bars span:nth-child(3) { height: 5px;  animation-delay: 0.3s; }
+@keyframes bar-bounce {
+  0%, 100% { transform: scaleY(0.5); }
+  50%       { transform: scaleY(1); }
 }
 </style>
