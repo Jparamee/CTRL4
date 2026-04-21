@@ -92,38 +92,45 @@
         <path d="M 10 10 H 310 V 190 H 10 Z" fill="var(--surface)" />
 
         <g v-for="room in floor.rooms" :key="room.id" class="map-room" @click="$emit('open-room', room)">
-          <rect 
-            :fill="getBusyColor(room.busy)" 
-            :x="room.x" :y="room.y" :width="room.w" :height="room.h" 
-            rx="10" 
+          <rect
+            :fill="getBusyColor(room.busy)"
+            :x="room.x" :y="room.y" :width="room.w" :height="room.h"
+            rx="10"
             stroke="var(--border)" stroke-width="1"
             filter="url(#room-shadow)"
           />
-          
-          <text :x="room.x + room.w/2" :y="room.y + room.h/2" text-anchor="middle" 
-            font-family="'DM Sans', sans-serif" 
-            :font-size="room.w < 140 ? 9 : 11" 
-            font-weight="700" 
+
+          <text :x="room.x + room.w/2" :y="room.y + room.h/2" text-anchor="middle"
+            font-family="'DM Sans', sans-serif"
+            :font-size="room.w < 140 ? 9 : 11"
+            font-weight="700"
             fill="#1a1a1a" dominant-baseline="central">
             {{ room.label }}
           </text>
-          
+
           <circle :cx="room.x + room.w - 12" :cy="room.y + 12" r="7" fill="var(--room-icon-bg, #ffffff)" opacity="0.95"/>
-          <text :x="room.x + room.w - 12" :y="room.y + 12" font-family="'DM Sans', sans-serif" 
-            font-size="9" font-weight="800" fill="var(--room-icon-text, #1a1a1a)" 
+          <text :x="room.x + room.w - 12" :y="room.y + 12" font-family="'DM Sans', sans-serif"
+            font-size="9" font-weight="800" fill="var(--room-icon-text, #1a1a1a)"
             text-anchor="middle" dominant-baseline="central">i</text>
 
           <g v-for="door in room.doors" :key="door.id">
             <rect :x="door.x" :y="door.y" :width="door.w" :height="door.h" fill="var(--surface)"/>
           </g>
-        </g>
 
-        <g v-if="floor.user_loc" class="user-marker">
-          <circle :cx="floor.user_loc.x" :cy="floor.user_loc.y" r="10" fill="var(--text-main)" opacity="0.2">
-            <animate attributeName="r" values="8;20;8" dur="2s" repeatCount="indefinite" />
-            <animate attributeName="opacity" values="0.4;0;0.4" dur="2s" repeatCount="indefinite" />
-          </circle>
-          <circle :cx="floor.user_loc.x" :cy="floor.user_loc.y" r="5" fill="var(--text-main)" stroke="#ffffff" stroke-width="2"/>
+          <!-- "You are here" dot — shown only on the room matching activeRoomId -->
+          <g v-if="room.id === activeRoomId" class="user-marker">
+            <circle
+              :cx="room.x + room.w / 2"
+              :cy="room.y + room.h / 2"
+              r="10" fill="var(--text-main)" opacity="0.2">
+              <animate attributeName="r"       values="8;18;8"     dur="2s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.35;0;0.35" dur="2s" repeatCount="indefinite" />
+            </circle>
+            <circle
+              :cx="room.x + room.w / 2"
+              :cy="room.y + room.h / 2"
+              r="5" fill="var(--text-main)" stroke="#ffffff" stroke-width="2"/>
+          </g>
         </g>
       </svg>
     </div>
@@ -145,7 +152,11 @@ defineProps({
   },
   locationStatus: {
     type: String,
-    default: 'pending' // 'pending' | 'granted' | 'denied' | 'unavailable'
+    default: 'pending'
+  },
+  activeRoomId: {
+    type: String,
+    default: null   // null = no beacon in range = no dot shown
   }
 })
 

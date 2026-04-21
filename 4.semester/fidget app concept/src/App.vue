@@ -15,6 +15,7 @@
         :floors="currentMuseumFloors"
         :museumName="currentMuseumName"
         :locationStatus="locationStatus"
+        :activeRoomId="activeRoomId"
         @open-room="openModal"
         @open-museum-picker="showMuseumPicker = true"
       />
@@ -163,7 +164,10 @@ const POLL_INTERVAL   = 2000  // How often to decide which room is closest
 let bleInitialised  = false
 let bleScanActive   = false
 let bleEvalInterval = null
-let currentBeaconId = null   // The beaconId we last switched to
+let currentBeaconId = null   // plain ref — just for dedup checks
+
+// Reactive — drives the "you are here" dot in VenueMap
+const activeRoomId = ref(null)
 
 // rolling RSSI store:  Map<beaconId, Array<{rssi, ts}>>
 const rssiStore = new Map()
@@ -193,22 +197,31 @@ function evaluateClosestRoom() {
 
     const avg = averageRssi(fresh)
 
-    // Only consider beacons above the minimum RSSI threshold
     if (avg > RSSI_MIN && avg > bestAvg) {
       bestAvg    = avg
       bestBeacon = beaconId
     }
   }
 
-  // No change needed
-  if (!bestBeacon || bestBeacon === currentBeaconId) return
+  // ── No beacon in range — clear the dot ─────────────────
+  if (!bestBeacon) {
+    if (currentBeaconId !== null) {
+      currentBeaconId    = null
+      activeRoomId.value = null
+    }
+    return
+  }
+
+  // ── Same room as before — nothing to do ────────────────
+  if (bestBeacon === currentBeaconId) return
 
   const entry = beaconMap.get(bestBeacon)
-  if (!entry) return  // Beacon ID not in our map — ignore it
+  if (!entry) return  // Not one of our beacons — ignore
 
   console.log(`[BLE] Switched to room: ${entry.label} (beacon: ${bestBeacon}, avg RSSI: ${bestAvg.toFixed(1)})`)
 
-  currentBeaconId = bestBeacon
+  currentBeaconId    = bestBeacon
+  activeRoomId.value = entry.room.id   // ← drives the map dot
 
   if (entry.themeAudio) {
     changeRoomTheme(entry.themeAudio, entry.label)

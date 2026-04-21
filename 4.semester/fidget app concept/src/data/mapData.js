@@ -5,7 +5,7 @@ export const museums = {
     lng: 10.125566502640382,
     floors: [
       {
-        id: 'floor3', title: 'Level 3 - Imagine This', user_loc: null,
+        id: 'floor3', title: 'Level 3 - Imagine This',
         rooms: [
           {
             id: 'vr_imagine', label: 'Imagine This (VR)',
@@ -23,7 +23,7 @@ export const museums = {
         ]
       },
       {
-        id: 'floor2', title: 'Level 2 - Future Human', user_loc: null,
+        id: 'floor2', title: 'Level 2 - Future Human',
         rooms: [
           {
             id: 'future_human', label: 'Future Human Exhibit',
@@ -41,7 +41,7 @@ export const museums = {
         ]
       },
       {
-        id: 'floor1', title: 'Level 1 - Classic Natural History', user_loc: null,
+        id: 'floor1', title: 'Level 1 - Classic Natural History',
         rooms: [
           {
             id: 'classic_nh', label: 'Classic Natural History',
@@ -59,7 +59,7 @@ export const museums = {
         ]
       },
       {
-        id: 'floor0', title: 'Level 0 - Entrance & Cafe', user_loc: {x: 80, y: 160},
+        id: 'floor0', title: 'Level 0 - Entrance & Cafe',
         rooms: [
           {
             id: 'entrance_shop', label: 'Main Entrance & Shop',
@@ -102,7 +102,7 @@ export const museums = {
         ]
       },
       {
-        id: 'floor_minus1', title: 'Level -1 - Basement & Garden', user_loc: null,
+        id: 'floor_minus1', title: 'Level -1 - Basement & Garden',
         rooms: [
           {
             id: 'africa_savannah', label: 'African Savannah',
