@@ -81,56 +81,96 @@
 
     <div v-for="floor in floors" :key="floor.id" class="floor-section">
       <h2 class="floor-title">{{ floor.title }}</h2>
-      
-      <svg class="floor-plan-detailed" viewBox="0 0 320 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+      <!--
+        floor.viewBox  — custom viewBox string (default '0 0 320 200')
+        floor.outline  — SVG path string for the building footprint background
+                         (default: simple rect covering the viewBox)
+      -->
+      <svg
+        class="floor-plan-detailed"
+        :viewBox="floor.viewBox || '0 0 320 200'"
+        :style="floor.viewBox ? svgAspect(floor.viewBox) : {}"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <defs>
           <filter id="room-shadow" x="-10%" y="-10%" width="120%" height="130%">
             <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#2c3e50" flood-opacity="0.10"/>
           </filter>
         </defs>
 
-        <path d="M 10 10 H 310 V 190 H 10 Z" fill="var(--surface)" />
+        <!-- Building outline / floor background -->
+        <path v-if="floor.outline" :d="floor.outline" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"/>
+        <path v-else d="M 10 10 H 310 V 190 H 10 Z" fill="var(--surface)" />
 
         <g v-for="room in floor.rooms" :key="room.id" class="map-room" @click="$emit('open-room', room)">
-          <rect
+
+          <!-- ── Polygon room (non-rectangular shapes) ── -->
+          <polygon
+            v-if="room.shape === 'polygon'"
+            :points="room.points"
             :fill="getBusyColor(room.busy)"
-            :x="room.x" :y="room.y" :width="room.w" :height="room.h"
-            rx="10"
             stroke="var(--border)" stroke-width="1"
             filter="url(#room-shadow)"
           />
 
-          <text :x="room.x + room.w/2" :y="room.y + room.h/2" text-anchor="middle"
+          <!-- ── Default rectangle room ── -->
+          <rect
+            v-else
+            :fill="getBusyColor(room.busy)"
+            :x="room.x" :y="room.y" :width="room.w" :height="room.h"
+            :rx="room.rx !== undefined ? room.rx : 8"
+            stroke="var(--border)" stroke-width="1"
+            filter="url(#room-shadow)"
+          />
+
+          <!-- ── Room label ── -->
+          <!-- cx/cy override lets polygon rooms specify exact label centre -->
+          <text
+            :x="room.cx !== undefined ? room.cx : room.x + room.w / 2"
+            :y="room.cy !== undefined ? room.cy : room.y + room.h / 2"
+            text-anchor="middle"
             font-family="'DM Sans', sans-serif"
-            :font-size="room.w < 140 ? 9 : 11"
+            :font-size="room.fontSize || (room.w < 140 ? 9 : 11)"
             font-weight="700"
             fill="#1a1a1a" dominant-baseline="central">
             {{ room.label }}
           </text>
 
-          <circle :cx="room.x + room.w - 12" :cy="room.y + 12" r="7" fill="var(--room-icon-bg, #ffffff)" opacity="0.95"/>
-          <text :x="room.x + room.w - 12" :y="room.y + 12" font-family="'DM Sans', sans-serif"
+          <!-- ── Info icon ── -->
+          <!-- iconX/iconY override for polygon rooms where top-right isn't obvious -->
+          <circle
+            :cx="room.iconX !== undefined ? room.iconX : room.x + room.w - 12"
+            :cy="room.iconY !== undefined ? room.iconY : room.y + 12"
+            r="7" fill="var(--room-icon-bg, #ffffff)" opacity="0.95"/>
+          <text
+            :x="room.iconX !== undefined ? room.iconX : room.x + room.w - 12"
+            :y="room.iconY !== undefined ? room.iconY : room.y + 12"
+            font-family="'DM Sans', sans-serif"
             font-size="9" font-weight="800" fill="var(--room-icon-text, #1a1a1a)"
             text-anchor="middle" dominant-baseline="central">i</text>
 
+          <!-- ── Door gaps ── -->
           <g v-for="door in room.doors" :key="door.id">
             <rect :x="door.x" :y="door.y" :width="door.w" :height="door.h" fill="var(--surface)"/>
           </g>
 
-          <!-- "You are here" dot — shown only on the room matching activeRoomId -->
+          <!-- ── "You are here" dot ── -->
           <g v-if="room.id === activeRoomId" class="user-marker">
             <circle
-              :cx="room.x + room.w / 2"
-              :cy="room.y + room.h / 2"
+              :cx="room.cx !== undefined ? room.cx : room.x + room.w / 2"
+              :cy="room.cy !== undefined ? room.cy : room.y + room.h / 2"
               r="10" fill="var(--text-main)" opacity="0.2">
-              <animate attributeName="r"       values="8;18;8"     dur="2s" repeatCount="indefinite" />
+              <animate attributeName="r"       values="8;18;8"      dur="2s" repeatCount="indefinite" />
               <animate attributeName="opacity" values="0.35;0;0.35" dur="2s" repeatCount="indefinite" />
             </circle>
             <circle
-              :cx="room.x + room.w / 2"
-              :cy="room.y + room.h / 2"
+              :cx="room.cx !== undefined ? room.cx : room.x + room.w / 2"
+              :cy="room.cy !== undefined ? room.cy : room.y + room.h / 2"
               r="5" fill="var(--text-main)" stroke="#ffffff" stroke-width="2"/>
           </g>
+
         </g>
       </svg>
     </div>
@@ -182,6 +222,15 @@ function getBusyColor(busyState) {
   if (busyState === 'low') return '#cad2c5' 
   if (busyState === 'med') return '#82ac97' 
   return '#52796f' 
+}
+
+// Returns an inline style that keeps the SVG at the correct aspect ratio
+// for non-standard viewBoxes (the default 320×200 is handled by the CSS class)
+function svgAspect(viewBox) {
+  const parts = viewBox.split(' ').map(Number)
+  if (parts.length !== 4) return {}
+  const [,, w, h] = parts
+  return { aspectRatio: `${w} / ${h}` }
 }
 </script>
 
@@ -312,6 +361,7 @@ function getBusyColor(busyState) {
 .floor-section { display: flex; flex-direction: column; margin-bottom: 20px; }
 .floor-section:last-child { margin-bottom: 0; }
 .floor-title { font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 12px; }
+/* Default aspect ratio for 320×200 viewBox. Custom viewBoxes override via inline style. */
 .floor-plan-detailed { width: 100%; height: auto; aspect-ratio: 16 / 10; }
 
 .map-room rect { cursor: pointer; transition: opacity 0.2s ease, filter 0.2s ease; }

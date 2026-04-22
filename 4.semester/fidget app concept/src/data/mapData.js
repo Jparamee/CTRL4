@@ -1,8 +1,8 @@
 export const museums = {
   "natural-history": {
     name: "Natural History Museum",
-    lat: 56.17395785833253,
-    lng: 10.125566502640382,
+    lat: 56.167447558753864,
+    lng: 10.203131162426935,
     floors: [
       {
         id: 'floor3', title: 'Level 3 - Imagine This',
@@ -162,8 +162,8 @@ export const museums = {
 
   'aros': {
     name: "ARoS Art Museum",
-    lat: 56.175694675257645,
-    lng: 10.1364725182567,
+    lat: 56.15388172532231,
+    lng: 10.19962702386314,
     floors: [
       {
         id: "aros-level-10", title: "Level 10 - Roof",
@@ -243,6 +243,204 @@ export const museums = {
             busy: 'low', population: 8,
             themeAudio: 'softpop muzak.mp3',
             trigger_warnings: ['Dark environment', 'Sensory deprivation', 'Spatial distortion']
+          }
+        ]
+      }
+    ]
+  }
+,
+'nygaard': {
+    name: 'Nygaard Bygning',
+    lat: 56.17163612448158,
+    lng: 10.190204863098735,
+    floors: [
+      {
+        id: 'nygaard-floor-3',
+        title: 'Etage 3 — Alexandra & Datalogi',
+        viewBox: '0 0 460 490',
+        outline: 'M 72,10 H 450 V 480 H 10 V 70 H 72 Z',
+        rooms: [
+          {
+            id: 'n3-alexandra', label: 'Alexandra Instituttet', beaconId: 'AudioVerse-N3-ALEX',
+            description: { en: 'Alexandra Institute research labs and offices.' },
+            x: 150, y: 70, w: 200, h: 100, busy: 'med', population: 25, 
+            doors: [{ id: 'd3-1', x: 240, y: 168, w: 20, h: 4 }], 
+            themeAudio: 'softpop muzak.mp3'
+          },
+          {
+            id: 'n3-datalogi-left', label: 'Datalogi (Left Wing)', beaconId: 'AudioVerse-N3-DAT1',
+            description: { en: 'Computer Science offices and meeting rooms.' },
+            x: 10, y: 70, w: 90, h: 410, busy: 'low', population: 15, 
+            doors: [{ id: 'd3-2', x: 98, y: 420, w: 4, h: 30 }]
+          },
+          {
+            id: 'n3-datalogi-right', label: 'Datalogi (Right Wing)', beaconId: 'AudioVerse-N3-DAT2',
+            description: { en: 'Computer Science research spaces.' },
+            x: 350, y: 170, w: 100, h: 310, busy: 'low', population: 18, 
+            doors: [{ id: 'd3-3', x: 348, y: 420, w: 4, h: 30 }]
+          },
+          {
+            id: 'n3-bridge', label: 'Connecting Bridge', beaconId: 'AudioVerse-N3-BR',
+            description: { en: 'South connecting corridor.' },
+            x: 110, y: 400, w: 230, h: 80, busy: 'low', population: 5, 
+            doors: [
+              { id: 'd3-4', x: 108, y: 420, w: 4, h: 30 },
+              { id: 'd3-5', x: 338, y: 420, w: 4, h: 30 }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'nygaard-floor-2',
+        title: 'Etage 2 — IMV & Datalogi',
+        viewBox: '0 0 460 490',
+        outline: 'M 72,10 H 450 V 480 H 10 V 70 H 72 Z',
+        rooms: [
+          {
+            id: 'n2-imv-left', label: 'IMV Offices', beaconId: 'AudioVerse-N2-IMV',
+            description: { en: 'Information and Media Studies department.' },
+            x: 10, y: 70, w: 90, h: 410, busy: 'med', population: 30, 
+            doors: [{ id: 'd2-1', x: 98, y: 110, w: 4, h: 30 }, { id: 'd2-2', x: 98, y: 420, w: 4, h: 30 }], 
+            themeAudio: 'tomomi_kato peaceful piano.mp3'
+          },
+          {
+            id: 'n2-imv-bridge', label: 'IMV Bridge', beaconId: 'AudioVerse-N2-IMVB',
+            description: { en: 'North connecting corridor.' },
+            x: 110, y: 70, w: 230, h: 80, busy: 'low', population: 8, 
+            doors: [{ id: 'd2-3', x: 108, y: 110, w: 4, h: 30 }, { id: 'd2-4', x: 338, y: 110, w: 4, h: 30 }]
+          },
+          {
+            id: 'n2-datalogi-right', label: 'Datalogi Offices', beaconId: 'AudioVerse-N2-DAT',
+            description: { en: 'Computer Science department.' },
+            x: 350, y: 70, w: 100, h: 410, busy: 'med', population: 35, 
+            doors: [{ id: 'd2-5', x: 348, y: 110, w: 4, h: 30 }, { id: 'd2-6', x: 348, y: 420, w: 4, h: 30 }], 
+            themeAudio: 'air rush pipes slightly cheesy.mp3'
+          },
+          {
+            id: 'n2-datalogi-bridge', label: 'Datalogi Bridge', beaconId: 'AudioVerse-N2-DATB',
+            description: { en: 'South connecting corridor.' },
+            x: 110, y: 400, w: 230, h: 80, busy: 'low', population: 6, 
+            doors: [{ id: 'd2-7', x: 108, y: 420, w: 4, h: 30 }, { id: 'd2-8', x: 338, y: 420, w: 4, h: 30 }]
+          }
+        ]
+      },
+      {
+        id: 'nygaard-floor-1',
+        title: 'Etage 1 — Bibliotek & Balkoner',
+        viewBox: '0 0 460 490',
+        outline: 'M 72,10 H 450 V 480 H 10 V 70 H 72 Z',
+        rooms: [
+          {
+            id: 'n1-bibliotek', label: 'Bibliotek', beaconId: 'AudioVerse-N1-BIB',
+            description: { en: 'Main library and quiet study area situated above the auditorium.' },
+            x: 120, y: 160, w: 180, h: 220, busy: 'low', population: 12, 
+            doors: [{ id: 'd1-1', x: 200, y: 158, w: 20, h: 4 }], 
+            themeAudio: 'quiet piano w trippy birds.mp3'
+          },
+          {
+            id: 'n1-laesebalkon', label: 'Læsebalkon', beaconId: 'AudioVerse-N1-BALK',
+            description: { en: 'Reading balconies overlooking the ground floor.' },
+            x: 10, y: 160, w: 90, h: 320, busy: 'med', population: 22, 
+            doors: [{ id: 'd1-2', x: 45, y: 158, w: 20, h: 4 }]
+          },
+          {
+            id: 'n1-seminar', label: 'Seminarlokaler', beaconId: 'AudioVerse-N1-SEM',
+            description: { en: 'Classrooms and seminar spaces.' },
+            x: 320, y: 160, w: 130, h: 320, busy: 'high', population: 45, 
+            doors: [{ id: 'd1-3', x: 318, y: 250, w: 4, h: 20 }]
+          },
+          {
+            id: 'n1-imv-offices', label: 'IMV Kontorer', beaconId: 'AudioVerse-N1-IMV',
+            description: { en: 'Red zone IMV offices.' },
+            x: 10, y: 10, w: 150, h: 130, busy: 'low', population: 10, 
+            doors: [{ id: 'd1-4', x: 158, y: 70, w: 4, h: 20 }]
+          }
+        ]
+      },
+      {
+        id: 'nygaard-floor-0',
+        title: 'Etage 0 — Ground Floor',
+        viewBox: '0 0 460 490',
+        outline: 'M 72,10 H 450 V 480 H 10 V 70 H 72 Z',
+        rooms: [
+          {
+            id: 'n0-foyer', label: 'Foyer & Indgang', beaconId: 'AudioVerse-N0-FOY',
+            description: { en: 'Main entrance foyer and gathering space.' },
+            x: 180, y: 10, w: 270, h: 130, busy: 'high', population: 60, 
+            doors: [{ id: 'd0-1', x: 280, y: 138, w: 30, h: 4 }, { id: 'd0-2', x: 178, y: 70, w: 4, h: 30 }], 
+            themeAudio: 'softpop muzak.mp3'
+          },
+          {
+            id: 'n0-auditorium', label: 'Auditorium (Floor)', beaconId: 'AudioVerse-N0-AUD',
+            description: { en: 'Main floor seating for the grand auditorium.' },
+            x: 100, y: 160, w: 220, h: 240, busy: 'high', population: 120, 
+            doors: [{ id: 'd0-3', x: 200, y: 158, w: 20, h: 4 }, { id: 'd0-4', x: 200, y: 398, w: 20, h: 4 }], 
+            themeAudio: 'central african theme.mp3'
+          },
+          {
+            id: 'n0-laesepladser-left', label: 'Læsepladser (Venstre)', beaconId: 'AudioVerse-N0-READL',
+            description: { en: 'Open study area on the left wing.' },
+            x: 10, y: 160, w: 70, h: 320, busy: 'med', population: 20, 
+            doors: [{ id: 'd0-5', x: 35, y: 158, w: 20, h: 4 }]
+          },
+          {
+            id: 'n0-seminar', label: 'Seminarlokale & Læsepladser', beaconId: 'AudioVerse-N0-SEM',
+            description: { en: 'Ground floor seminar room and study area on the right wing.' },
+            x: 340, y: 160, w: 110, h: 320, busy: 'low', population: 15, 
+            doors: [{ id: 'd0-6', x: 338, y: 250, w: 4, h: 30 }]
+          }
+        ]
+      },
+      {
+        id: 'nygaard-floor-minus1',
+        title: 'Etage -1 — Expo Floor',
+        viewBox: '0 0 460 490',
+        outline: 'M 72,10 H 450 V 480 H 10 V 70 H 72 Z',
+        rooms: [
+          {
+            id: 'nygaard-foyer', label: 'Entrance & Foyer', beaconId: 'AudioVerse-Expo-Entry',
+            description: { en: 'Welcome to the AudioVerse expo! Sign in here, collect your badge and programme.' },
+            x: 72, y: 10, w: 210, h: 58, cx: 177, cy: 39, fontSize: 10, busy: 'med', population: 20, 
+            doors: [{ id: 'foyer-s', x: 152, y: 66, w: 36, h: 4 }], themeAudio: 'softpop muzak.mp3'
+          },
+          {
+            id: 'nygaard-auditorium', label: 'Auditorium', beaconId: 'AudioVerse-Expo-Stage',
+            description: { en: 'The main presentation space.' },
+            x: 72, y: 80, w: 210, h: 213, cx: 177, cy: 176, fontSize: 12, busy: 'high', population: 80, 
+            doors: [{ id: 'aud-n', x: 152, y: 78, w: 36, h: 4 }, { id: 'aud-s', x: 152, y: 291, w: 36, h: 4 }], themeAudio: 'air rush pipes slightly cheesy.mp3'
+          },
+          {
+            id: 'nygaard-stands-left', label: 'Expo Stands', beaconId: 'AudioVerse-Expo-Stands',
+            description: { en: 'Interactive project stands run along the left wing.' },
+            x: 10, y: 80, w: 50, h: 213, cx: 40, cy: 176, fontSize: 9, busy: 'high', population: 45, 
+            doors: [{ id: 'stands-e', x: 58, y: 150, w: 4, h: 30 }], themeAudio: 'tomomi_kato peaceful piano.mp3'
+          },
+          {
+            id: 'nygaard-demo-floor', label: 'Demo Floor', beaconId: 'AudioVerse-Room-A',
+            description: { en: 'The main open demo floor — networking, project displays.' },
+            x: 10, y: 310, w: 272, h: 168, cx: 144, cy: 409, fontSize: 11, busy: 'high', population: 55, 
+            doors: [{ id: 'df-n', x: 150, y: 308, w: 40, h: 4 }, { id: 'df-e', x: 280, y: 390, w: 4, h: 30 }], themeAudio: 'central african theme.mp3'
+          },
+          {
+            id: 'nygaard-booths', label: 'Demo Booths', beaconId: 'AudioVerse-Expo-Booths',
+            description: { en: 'Individual project demo stations in the right wing.' },
+            x: 305, y: 10, w: 143, h: 260, cx: 381, cy: 140, fontSize: 9, busy: 'med', population: 30, 
+            doors: [{ id: 'booths-w', x: 303, y: 110, w: 4, h: 30 }], themeAudio: 'tiny xylophone w echoes.mp3'
+          },
+          {
+            id: 'nygaard-mediecelle-a', label: 'Media Room A', beaconId: 'AudioVerse-Expo-MediaA',
+            description: { en: 'A dedicated AV demo room.' },
+            shape: 'polygon', points: '321,313 449,305 449,361 321,369', cx: 385, cy: 337, iconX: 433, iconY: 319, fontSize: 9, busy: 'med', population: 12, themeAudio: 'quiet piano w trippy birds.mp3'
+          },
+          {
+            id: 'nygaard-mediecelle-b', label: 'AudioVerse Demo', beaconId: 'AudioVerse-Room-A',
+            description: { en: 'The AudioVerse live demo room.' },
+            shape: 'polygon', points: '321,377 449,369 449,415 321,423', cx: 385, cy: 396, iconX: 433, iconY: 382, fontSize: 9, busy: 'high', population: 8, themeAudio: 'central african theme.mp3'
+          },
+          {
+            id: 'nygaard-mediecelle-c', label: 'Beacon Zone B', beaconId: 'AudioVerse-Room-B',
+            description: { en: 'The second beacon zone.' },
+            shape: 'polygon', points: '321,431 449,423 449,469 321,477', cx: 385, cy: 450, iconX: 433, iconY: 436, fontSize: 9, busy: 'med', population: 8, themeAudio: 'tiny xylophone w echoes.mp3'
           }
         ]
       }

@@ -23,6 +23,45 @@
       <div class="playback-section" ref="sectionRef">
 
         <!-- ════════════════════════════════════
+             AMBIENT MUSIC ROW
+        ════════════════════════════════════ -->
+        <div class="ambient-row">
+          <div class="ambient-icon-wrap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18V5l12-2v13"/>
+              <circle cx="6" cy="18" r="3"/>
+              <circle cx="18" cy="16" r="3"/>
+            </svg>
+          </div>
+
+          <div class="ambient-info">
+            <span class="ambient-label">{{ t('Ambient Music', 'Baggrundsmusik', 'Ambiente Musik') }}</span>
+            <span class="ambient-room" :class="{ 'no-room': !currentRoomName }">
+              {{ currentRoomName || t('No room detected yet', 'Intet rum fundet endnu', 'Kein Raum erkannt') }}
+            </span>
+          </div>
+
+          <!-- Music play/pause pill -->
+          <button
+            class="ambient-toggle"
+            :class="{ playing: themeIsPlaying, disabled: !currentRoomName }"
+            @click.stop="toggleTheme"
+            :disabled="!currentRoomName"
+            :title="themeIsPlaying
+              ? t('Pause music', 'Pause musik', 'Musik pausieren')
+              : t('Play music', 'Afspil musik', 'Musik abspielen')"
+          >
+            <span v-if="themeIsPlaying" class="music-bars">
+              <span></span><span></span><span></span>
+            </span>
+            <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="6 4 20 12 6 20 6 4"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- ════════════════════════════════════
              GUIDE PLAYER CARD
         ════════════════════════════════════ -->
         <div class="player-card guide-card">
@@ -31,7 +70,6 @@
           <div class="card-header">
             <div class="card-title-group">
               <div class="card-icon">
-                <!-- headphones -->
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
@@ -45,13 +83,13 @@
               </div>
             </div>
 
-            <!-- Language pills -->
+            <!-- Language pills — control guide audio track only, not UI language -->
             <div class="lang-chips">
               <button
                 v-for="l in langs" :key="l.code"
                 class="lang-chip"
-                :class="{ active: currentLang === l.code }"
-                @click.stop="currentLang = l.code"
+                :class="{ active: guideLang === l.code }"
+                @click.stop="guideLang = l.code"
               >{{ l.label }}</button>
             </div>
           </div>
@@ -122,47 +160,6 @@
           </div>
         </div>
 
-        <!-- ════════════════════════════════════
-             AMBIENT MUSIC ROW
-        ════════════════════════════════════ -->
-        <div class="ambient-row">
-          <div class="ambient-icon-wrap">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 18V5l12-2v13"/>
-              <circle cx="6" cy="18" r="3"/>
-              <circle cx="18" cy="16" r="3"/>
-            </svg>
-          </div>
-
-          <div class="ambient-info">
-            <span class="ambient-label">{{ t('Ambient Music', 'Baggrundsmusik', 'Ambiente Musik') }}</span>
-            <span class="ambient-room" :class="{ 'no-room': !currentRoomName }">
-              {{ currentRoomName || t('No room detected yet', 'Intet rum fundet endnu', 'Kein Raum erkannt') }}
-            </span>
-          </div>
-
-          <!-- Music play/pause pill -->
-          <button
-            class="ambient-toggle"
-            :class="{ playing: themeIsPlaying, disabled: !currentRoomName }"
-            @click.stop="toggleTheme"
-            :disabled="!currentRoomName"
-            :title="themeIsPlaying
-              ? t('Pause music', 'Pause musik', 'Musik pausieren')
-              : t('Play music', 'Afspil musik', 'Musik abspielen')"
-          >
-            <!-- Animated bars (playing) -->
-            <span v-if="themeIsPlaying" class="music-bars">
-              <span></span><span></span><span></span>
-            </span>
-            <!-- Play icon (paused) -->
-            <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="6 4 20 12 6 20 6 4"/>
-            </svg>
-          </button>
-        </div>
-
       </div><!-- /playback-section -->
     </div><!-- /playback-wrapper -->
 
@@ -198,9 +195,10 @@ import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import {
   guideIsPlaying, guideCurrentTime, guideDuration, playbackSpeed,
   themeIsPlaying, currentRoomName,
-  toggleGuide, skipGuide, seekGuide, toggleTheme
+  toggleGuide, skipGuide, seekGuide, toggleTheme,
+  guideLang           // ← guide-only language, lives in audioStore
 } from '../audioStore.js'
-import { t, currentLang } from '../langStore.js'
+import { t } from '../langStore.js'  // t() still uses the UI language for labels
 
 const props = defineProps({ activeTab: String })
 defineEmits(['switch-tab'])

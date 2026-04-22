@@ -231,41 +231,47 @@ function evaluateClosestRoom() {
 async function startBleScan() {
   if (bleScanActive) return
 
+  // ── Step 1: initialise the plugin ──────────────────────
   try {
-    await BleClient.initialize({ androidNeverForLocation: true })
+    await BleClient.initialize() // <-- Removed the androidNeverForLocation restriction
     bleInitialised = true
   } catch (e) {
     console.warn('[BLE] BleClient.initialize failed — BLE unavailable on this device:', e)
     return
   }
 
+  // ── Step 2: explicitly request runtime permissions ──────
+  // This is what actually triggers the system dialog on Android 12+.
+  // Without this call the scan silently fails the first time.
   try {
-    // requestLEScan fires the callback for every advertisement packet received.
-    // We filter by name prefix so we only process our own beacons.
+    const permission = await BleClient.requestPermissions()
+    // 'granted' means all required permissions were accepted.
+    // Any other value (denied / prompt-denied) means we can't scan.
+    if (permission?.bluetooth !== 'granted') {
+      console.warn('[BLE] Bluetooth permission not granted:', permission)
+      return
+    }
+  } catch (e) {
+    // requestPermissions throws on platforms that don't support it (e.g. iOS
+    // handles permissions differently — safe to continue there).
+    console.warn('[BLE] requestPermissions not supported on this platform, continuing:', e)
+  }
+
+  // ── Step 3: start scanning ──────────────────────────────
+  try {
     await BleClient.requestLEScan(
-      {
-        // No UUID filter — our beacons advertise by name, not by service UUID
-        allowDuplicates: true   // We WANT duplicates to get fresh RSSI readings
-      },
+      { allowDuplicates: true },
       (result) => {
-        // result.localName  — the advertised name (most reliable)
-        // result.device.name — the cached system name (sometimes stale)
         const name = result.localName || result.device?.name || ''
-
-        if (!name.startsWith('AudioVerse-')) return  // Not our beacon — skip
-
+        if (!name.startsWith('AudioVerse-')) return
         const rssi = result.rssi
         if (typeof rssi !== 'number') return
-
         recordRssi(name, rssi)
       }
     )
 
     bleScanActive = true
-
-    // Evaluate which room is closest every POLL_INTERVAL ms
     bleEvalInterval = setInterval(evaluateClosestRoom, POLL_INTERVAL)
-
     console.log('[BLE] Scanning started')
   } catch (e) {
     console.warn('[BLE] Failed to start BLE scan:', e)
@@ -363,9 +369,9 @@ async function startTracking() {
 // ─────────────────────────────────────────────────────────────
 //  LIFECYCLE
 // ─────────────────────────────────────────────────────────────
-onMounted(() => {
-  startTracking()
-  startBleScan()
+onMounted(async () => {
+  await startTracking()
+  await startBleScan()
 })
 
 onUnmounted(() => {

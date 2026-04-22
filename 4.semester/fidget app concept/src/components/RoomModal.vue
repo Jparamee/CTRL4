@@ -16,7 +16,30 @@
 
         <!-- ── Room description ──────────────────────────── -->
         <div v-if="roomDescription" class="modal-section">
-          <p class="room-description">{{ roomDescription }}</p>
+          <div class="desc-wrap" :class="{ expanded: descExpanded }">
+            <p class="room-description">{{ roomDescription }}</p>
+            <!-- fade-out gradient — hidden when expanded -->
+            <div v-if="!descExpanded && isLongDescription" class="desc-fade"></div>
+          </div>
+          <button
+            v-if="isLongDescription"
+            class="desc-toggle"
+            @click="descExpanded = !descExpanded"
+          >
+            <span>{{ descExpanded
+              ? t('Show less', 'Vis mindre', 'Weniger anzeigen')
+              : t('Show more', 'Vis mere', 'Mehr anzeigen')
+            }}</span>
+            <svg
+              width="13" height="13" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round"
+              :style="{ transform: descExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.25s ease' }"
+            >
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
         </div>
 
         <div v-if="roomDescription" class="divider"></div>
@@ -103,19 +126,16 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { t, currentLang } from '../langStore.js'
 import { changeRoomTheme, toggleTheme, themeIsPlaying } from '../audioStore.js'
 
 const props = defineProps({
-  room: {
-    type: Object,
-    required: true
-  }
+  room: { type: Object, required: true }
 })
-
 defineEmits(['close'])
 
+// Description text in current UI language
 const roomDescription = computed(() => {
   if (!props.room.description) return null
   return props.room.description[currentLang.value]
@@ -123,8 +143,18 @@ const roomDescription = computed(() => {
     || null
 })
 
+// Clamp at ~3 lines (≈120 chars is a reliable proxy for mobile widths)
+const CLAMP_THRESHOLD = 80
+const isLongDescription = computed(() =>
+  roomDescription.value && roomDescription.value.length > CLAMP_THRESHOLD
+)
+
+const descExpanded = ref(false)
+
+// Reset expand state whenever a different room is opened
+watch(() => props.room.id, () => { descExpanded.value = false })
+
 function playTheme() {
-  // Make sure the correct room track is loaded, then toggle play/pause
   if (props.room.themeAudio) {
     changeRoomTheme(props.room.themeAudio, props.room.label)
   }
@@ -185,13 +215,44 @@ function playTheme() {
 .modal-section { display: flex; flex-direction: column; gap: 12px; }
 
 /* ── Description ───────────────────────────────────────── */
+.desc-wrap {
+  position: relative;
+  /* Collapsed: show ~2 lines */
+  max-height: 3.2em;   /* 2 × 1.6 line-height */
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(.4,0,.2,1);
+}
+.desc-wrap.expanded {
+  max-height: 40em;
+}
+
 .room-description {
   font-size: 14px;
   line-height: 1.6;
   color: var(--text-muted);
   word-wrap: break-word;
   overflow-wrap: break-word;
+  margin: 0;
 }
+
+/* Gradient that sits over the last line when collapsed */
+.desc-fade {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2.4em;
+  background: linear-gradient(to bottom, transparent, var(--surface));
+  pointer-events: none;
+}
+
+.desc-toggle {
+  display: flex; align-items: center; gap: 4px;
+  margin-top: 6px;
+  background: none; border: none; padding: 0;
+  font-family: inherit; font-size: 12px; font-weight: 700;
+  color: var(--primary); cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.desc-toggle:hover { opacity: 0.75; }
 
 /* ── Section headers ───────────────────────────────────── */
 .section-header { display: flex; align-items: center; gap: 10px; }

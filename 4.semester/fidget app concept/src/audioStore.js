@@ -1,5 +1,4 @@
 import { ref, watch } from 'vue'
-import { currentLang } from './langStore.js'
 
 // ─────────────────────────────────────────────
 //  GUIDE TRACK STATE
@@ -7,6 +6,10 @@ import { currentLang } from './langStore.js'
 export const guideIsPlaying   = ref(false)
 export const guideCurrentTime = ref(0)
 export const guideDuration    = ref(0)
+// NEW: Independent language state just for the audio guide
+export const guideLang        = ref(localStorage.getItem('av_guide_lang') || 'en')
+
+watch(guideLang, (val) => localStorage.setItem('av_guide_lang', val))
 
 // ─────────────────────────────────────────────
 //  THEME TRACK STATE
@@ -40,7 +43,8 @@ function getGuideFile(lang) {
   return 'audio/english hyena speak.mp3'
 }
 
-const guideTrack = new Audio(getGuideFile(currentLang.value))
+// UPDATED: Now uses our independent guideLang instead of the UI language
+const guideTrack = new Audio(getGuideFile(guideLang.value))
 guideTrack.loop = false
 
 const savedPosition = localStorage.getItem('av_position')
@@ -64,8 +68,8 @@ guideTrack.addEventListener('ended', () => {
   guideIsPlaying.value = false
 })
 
-// Switch guide track when language changes
-watch(currentLang, (newLang) => {
+// UPDATED: Watch the independent guideLang to switch tracks
+watch(guideLang, (newLang) => {
   const wasPlaying = guideIsPlaying.value
   const savedTime  = guideTrack.currentTime
 
