@@ -1,14 +1,12 @@
 <template>
   <div class="map-container">
 
-    <!-- Location badge — always tappable to switch museum -->
     <button 
       class="location-badge"
       :class="{ 'no-location': locationStatus !== 'granted' }"
       @click="$emit('open-museum-picker')"
       :aria-label="locationStatus !== 'granted' ? 'Select a museum' : 'Switch museum'"
     >
-      <!-- Location OFF icon (crossed out) -->
       <svg v-if="locationStatus !== 'granted' && locationStatus !== 'pending'" 
         width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
@@ -16,12 +14,10 @@
         <line x1="2" y1="2" x2="22" y2="22"/>
       </svg>
 
-      <!-- Loading / pending spinner dots -->
       <span v-else-if="locationStatus === 'pending'" class="pending-dots">
         <span></span><span></span><span></span>
       </span>
 
-      <!-- Normal location icon (active GPS) -->
       <svg v-else 
         width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
@@ -30,7 +26,6 @@
 
       <span class="badge-label">{{ museumName }}</span>
 
-      <!-- Chevron hint that it's tappable -->
       <svg class="badge-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="6 9 12 15 18 9"/>
       </svg>
@@ -66,7 +61,6 @@
       </div>
     </div>
 
-    <!-- Empty state when no museum is selected and location is denied -->
     <div v-if="floors.length === 0 && locationStatus !== 'granted' && locationStatus !== 'pending'" class="empty-map-state">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
@@ -82,11 +76,6 @@
     <div v-for="floor in floors" :key="floor.id" class="floor-section">
       <h2 class="floor-title">{{ floor.title }}</h2>
 
-      <!--
-        floor.viewBox  — custom viewBox string (default '0 0 320 200')
-        floor.outline  — SVG path string for the building footprint background
-                         (default: simple rect covering the viewBox)
-      -->
       <svg
         class="floor-plan-detailed"
         :viewBox="floor.viewBox || '0 0 320 200'"
@@ -100,13 +89,11 @@
           </filter>
         </defs>
 
-        <!-- Building outline / floor background -->
         <path v-if="floor.outline" :d="floor.outline" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"/>
         <path v-else d="M 10 10 H 310 V 190 H 10 Z" fill="var(--surface)" />
 
         <g v-for="room in floor.rooms" :key="room.id" class="map-room" @click="$emit('open-room', room)">
 
-          <!-- ── Polygon room (non-rectangular shapes) ── -->
           <polygon
             v-if="room.shape === 'polygon'"
             :points="room.points"
@@ -115,7 +102,6 @@
             filter="url(#room-shadow)"
           />
 
-          <!-- ── Default rectangle room ── -->
           <rect
             v-else
             :fill="getBusyColor(room.busy)"
@@ -125,49 +111,52 @@
             filter="url(#room-shadow)"
           />
 
-          <!-- ── Room label ── -->
-          <!-- cx/cy override lets polygon rooms specify exact label centre -->
           <text
-            :x="room.cx !== undefined ? room.cx : room.x + room.w / 2"
-            :y="room.cy !== undefined ? room.cy : room.y + room.h / 2"
+            :x="room.cx !== undefined ? room.cx : room.x + (room.w || 100) / 2"
+            :y="room.cy !== undefined ? room.cy : room.y + (room.h || 100) / 2"
             text-anchor="middle"
             font-family="'DM Sans', sans-serif"
             :font-size="room.fontSize || (room.w < 140 ? 9 : 11)"
             font-weight="700"
             fill="#1a1a1a" dominant-baseline="central">
-            {{ room.label }}
+            
+            <tspan 
+              v-for="(line, index) in getWrappedText(room)" 
+              :key="index"
+              :x="room.cx !== undefined ? room.cx : room.x + (room.w || 100) / 2"
+              :dy="index === 0 ? `-${(getWrappedText(room).length - 1) * 0.6}em` : '1.2em'"
+            >
+              {{ line }}
+            </tspan>
+            
           </text>
 
-          <!-- ── Info icon ── -->
-          <!-- iconX/iconY override for polygon rooms where top-right isn't obvious -->
           <circle
-            :cx="room.iconX !== undefined ? room.iconX : room.x + room.w - 12"
+            :cx="room.iconX !== undefined ? room.iconX : room.x + (room.w || 100) - 12"
             :cy="room.iconY !== undefined ? room.iconY : room.y + 12"
             r="7" fill="var(--room-icon-bg, #ffffff)" opacity="0.95"/>
           <text
-            :x="room.iconX !== undefined ? room.iconX : room.x + room.w - 12"
+            :x="room.iconX !== undefined ? room.iconX : room.x + (room.w || 100) - 12"
             :y="room.iconY !== undefined ? room.iconY : room.y + 12"
             font-family="'DM Sans', sans-serif"
             font-size="9" font-weight="800" fill="var(--room-icon-text, #1a1a1a)"
             text-anchor="middle" dominant-baseline="central">i</text>
 
-          <!-- ── Door gaps ── -->
           <g v-for="door in room.doors" :key="door.id">
             <rect :x="door.x" :y="door.y" :width="door.w" :height="door.h" fill="var(--surface)"/>
           </g>
 
-          <!-- ── "You are here" dot ── -->
           <g v-if="room.id === activeRoomId" class="user-marker">
             <circle
-              :cx="room.cx !== undefined ? room.cx : room.x + room.w / 2"
-              :cy="room.cy !== undefined ? room.cy : room.y + room.h / 2"
+              :cx="room.cx !== undefined ? room.cx : room.x + (room.w || 100) / 2"
+              :cy="room.cy !== undefined ? room.cy : room.y + (room.h || 100) / 2"
               r="10" fill="var(--text-main)" opacity="0.2">
               <animate attributeName="r"       values="8;18;8"      dur="2s" repeatCount="indefinite" />
               <animate attributeName="opacity" values="0.35;0;0.35" dur="2s" repeatCount="indefinite" />
             </circle>
             <circle
-              :cx="room.cx !== undefined ? room.cx : room.x + room.w / 2"
-              :cy="room.cy !== undefined ? room.cy : room.y + room.h / 2"
+              :cx="room.cx !== undefined ? room.cx : room.x + (room.w || 100) / 2"
+              :cy="room.cy !== undefined ? room.cy : room.y + (room.h || 100) / 2"
               r="5" fill="var(--text-main)" stroke="#ffffff" stroke-width="2"/>
           </g>
 
@@ -232,6 +221,44 @@ function svgAspect(viewBox) {
   const [,, w, h] = parts
   return { aspectRatio: `${w} / ${h}` }
 }
+
+// Estimate text width (rough calculation based on font size and character count)
+function estimateTextWidth(text, fontSize) {
+  // A rough average: each character is about 60% as wide as the font size
+  return text.length * (fontSize * 0.6); 
+}
+
+// Split the room label into multiple lines if it's wider than the room box
+function getWrappedText(room) {
+  const label = room.label || '';
+  const fontSize = room.fontSize || (room.w < 140 ? 9 : 11);
+  const padding = 10; // Keep text slightly away from the edges
+  const maxAllowedWidth = (room.w || 100) - padding;
+
+  // If the text easily fits, return it as a single line
+  if (estimateTextWidth(label, fontSize) <= maxAllowedWidth) {
+    return [label];
+  }
+
+  // Otherwise, split it by spaces or hyphens and rebuild it line by line
+  const words = label.split(/(?=[-\s])/); // Splits keeping the hyphen/space attached to the next word
+  const lines = [];
+  let currentLine = '';
+
+  for (const word of words) {
+    const testLine = currentLine + word;
+    if (estimateTextWidth(testLine, fontSize) > maxAllowedWidth && currentLine !== '') {
+      lines.push(currentLine.trim());
+      currentLine = word.trim();
+    } else {
+      currentLine = testLine;
+    }
+  }
+  lines.push(currentLine.trim());
+
+  return lines;
+}
+
 </script>
 
 <style scoped>
@@ -364,7 +391,7 @@ function svgAspect(viewBox) {
 /* Default aspect ratio for 320×200 viewBox. Custom viewBoxes override via inline style. */
 .floor-plan-detailed { width: 100%; height: auto; aspect-ratio: 16 / 10; }
 
-.map-room rect { cursor: pointer; transition: opacity 0.2s ease, filter 0.2s ease; }
+.map-room rect, .map-room polygon { cursor: pointer; transition: opacity 0.2s ease, filter 0.2s ease; }
 .map-room text, .map-room circle { cursor: pointer; pointer-events: none; }
-.map-room:hover rect { opacity: 0.82; filter: url(#room-shadow) brightness(0.97); }
+.map-room:hover rect, .map-room:hover polygon { opacity: 0.82; filter: url(#room-shadow) brightness(0.97); }
 </style>

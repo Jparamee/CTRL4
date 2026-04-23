@@ -106,7 +106,7 @@ export const museums = {
         rooms: [
           {
             id: 'africa_savannah', label: 'African Savannah',
-            beaconId: 'AudioVerse-Room-A',    // ← your real beacon
+            beaconId: 'AudioVerse-Room-A',
             description: {
               en: 'Walk through a life-size recreation of the African savannah, complete with taxidermy wildlife, ambient soundscapes, and interactive habitat information panels.',
               da: 'Gå gennem en livsstørrelse-genskabelse af den afrikanske savanne med naturpræparater, omgivende lydscapes og interaktive informationstavler om levesteder.',
@@ -119,7 +119,7 @@ export const museums = {
           },
           {
             id: 'our_nature', label: 'Our Nature',
-            beaconId: 'AudioVerse-Room-B',    // ← your real beacon
+            beaconId: 'AudioVerse-Room-B',
             description: {
               en: 'A hands-on exhibition celebrating Danish nature - From coastal dunes to ancient forests. Touch real specimens, listen to local birdsong, and explore seasonal ecosystems.',
               da: 'En hands-on udstilling, der fejrer den danske natur - Fra kystklitter til urskov. Rør ved ægte eksemplarer, lyt til lokal fuglesang og udforsk sæsonbestemte økosystemer.',
@@ -247,9 +247,9 @@ export const museums = {
         ]
       }
     ]
-  }
-,
-'nygaard': {
+  },
+
+  'nygaard': {
     name: 'Nygaard Bygning',
     lat: 56.17163612448158,
     lng: 10.190204863098735,
@@ -331,63 +331,93 @@ export const museums = {
         outline: 'M 72,10 H 450 V 480 H 10 V 70 H 72 Z',
         rooms: [
           {
-            id: 'n1-bibliotek', label: 'Bibliotek', beaconId: 'AudioVerse-N1-BIB',
-            description: { en: 'Main library and quiet study area situated above the auditorium.' },
-            x: 120, y: 160, w: 180, h: 220, busy: 'low', population: 12, 
-            doors: [{ id: 'd1-1', x: 200, y: 158, w: 20, h: 4 }], 
-            themeAudio: 'quiet piano w trippy birds.mp3'
+            id: 'n1-imv-offices', label: 'IMV Kontorer', beaconId: 'AudioVerse-N1-IMV',
+            description: { en: 'Information and Media Studies offices.' },
+            // Top left red shaded area
+            x: 10, y: 70, w: 70, h: 90, shapeClass: 'room-alt', busy: 'low', population: 5, doors: []
           },
           {
             id: 'n1-laesebalkon', label: 'Læsebalkon', beaconId: 'AudioVerse-N1-BALK',
             description: { en: 'Reading balconies overlooking the ground floor.' },
-            x: 10, y: 160, w: 90, h: 320, busy: 'med', population: 22, 
-            doors: [{ id: 'd1-2', x: 45, y: 158, w: 20, h: 4 }]
+            // Long left vertical box
+            x: 10, y: 170, w: 70, h: 300, shapeClass: 'room-main-shape', busy: 'med', population: 22, doors: []
           },
           {
-            id: 'n1-seminar', label: 'Seminarlokaler', beaconId: 'AudioVerse-N1-SEM',
-            description: { en: 'Classrooms and seminar spaces.' },
-            x: 320, y: 160, w: 130, h: 320, busy: 'high', population: 45, 
-            doors: [{ id: 'd1-3', x: 318, y: 250, w: 4, h: 20 }]
+            id: 'n1-bibliotek', label: 'Bibliotek', beaconId: 'AudioVerse-N1-BIB',
+            description: { en: 'Main library and quiet study area.' },
+            // Center large box over the auditorium
+            x: 90, y: 170, w: 200, h: 250, shapeClass: 'room-alt', busy: 'low', population: 12, 
+            themeAudio: 'quiet piano w trippy birds.mp3', doors: []
           },
           {
-            id: 'n1-imv-offices', label: 'IMV Kontorer', beaconId: 'AudioVerse-N1-IMV',
-            description: { en: 'Red zone IMV offices.' },
-            x: 10, y: 10, w: 150, h: 130, busy: 'low', population: 10, 
-            doors: [{ id: 'd1-4', x: 158, y: 70, w: 4, h: 20 }]
+            id: 'n1-kontorlandskab', label: 'Kontorlandskab', beaconId: 'AudioVerse-N1-KONT',
+            description: { en: 'Open plan office and administration.' },
+            // Top right large box
+            x: 270, y: 10, w: 170, h: 140, shapeClass: 'room-main-shape', busy: 'low', population: 18, doors: []
+          },
+          {
+            id: 'n1-seminar-1', label: 'Seminarlokale 1', beaconId: 'AudioVerse-N1-SEM1',
+            description: { en: 'Northern seminar room.' },
+            // Middle right box (first seminar)
+            x: 300, y: 170, w: 140, h: 80, shapeClass: 'room-alt', busy: 'high', population: 25, doors: []
+          },
+          {
+            id: 'n1-trappe-b', label: 'Trappe B / Lounge', beaconId: 'AudioVerse-N1-TRAP',
+            description: { en: 'Spiral staircase and lounge area.' },
+            // Middle right box with the spiral staircase
+            x: 300, y: 260, w: 140, h: 80, shapeClass: 'room-main-shape', busy: 'low', population: 4, doors: []
+          },
+          {
+            id: 'n1-seminar-2', label: 'Seminarlokale 2', beaconId: 'AudioVerse-N1-SEM2',
+            description: { en: 'Southern seminar room.' },
+            // Bottom right box (second seminar)
+            x: 300, y: 350, w: 140, h: 80, shapeClass: 'room-alt', busy: 'med', population: 15, doors: []
+          },
+          {
+            id: 'n1-stille', label: 'Stille Område', beaconId: 'AudioVerse-N1-STIL',
+            description: { en: 'Quiet study area.' },
+            // Thin bottom right box
+            x: 300, y: 440, w: 140, h: 30, shapeClass: 'room-main-shape', busy: 'low', population: 2, doors: []
           }
         ]
       },
-      {
-        id: 'nygaard-floor-0',
+{
+        id: 'nygaard-floor-0', 
         title: 'Etage 0 — Ground Floor',
         viewBox: '0 0 460 490',
         outline: 'M 72,10 H 450 V 480 H 10 V 70 H 72 Z',
         rooms: [
           {
-            id: 'n0-foyer', label: 'Foyer & Indgang', beaconId: 'AudioVerse-N0-FOY',
-            description: { en: 'Main entrance foyer and gathering space.' },
-            x: 180, y: 10, w: 270, h: 130, busy: 'high', population: 60, 
-            doors: [{ id: 'd0-1', x: 280, y: 138, w: 30, h: 4 }, { id: 'd0-2', x: 178, y: 70, w: 4, h: 30 }], 
-            themeAudio: 'softpop muzak.mp3'
+            id: 'n0-lounge-left', label: 'Læsepladser (Left)',
+            description: { en: 'Student reading and lounge area.' },
+            x: 10, y: 70, w: 72, h: 400, shapeClass: 'room-alt', busy: 'med', population: 15, 
+            // Nudged slightly to x: 80 so it overlaps the wall perfectly
+            doors: [{ id: 'd0-1', x: 80, y: 250, w: 4, h: 20 }]
           },
           {
-            id: 'n0-auditorium', label: 'Auditorium (Floor)', beaconId: 'AudioVerse-N0-AUD',
-            description: { en: 'Main floor seating for the grand auditorium.' },
-            x: 100, y: 160, w: 220, h: 240, busy: 'high', population: 120, 
-            doors: [{ id: 'd0-3', x: 200, y: 158, w: 20, h: 4 }, { id: 'd0-4', x: 200, y: 398, w: 20, h: 4 }], 
-            themeAudio: 'central african theme.mp3'
+            id: 'n0-auditorium', label: 'Auditorium',
+            description: { en: 'Main auditorium seating.' },
+            x: 92, y: 130, w: 200, h: 270, shapeClass: 'room-theatre', busy: 'low', population: 0, 
+            // FIXED: Top door snapped to y: 128, Bottom door snapped to y: 398, both centered at x: 182
+            doors: [{ id: 'd0-2', x: 182, y: 128, w: 20, h: 4 }, { id: 'd0-3', x: 182, y: 398, w: 20, h: 4 }]
           },
           {
-            id: 'n0-laesepladser-left', label: 'Læsepladser (Venstre)', beaconId: 'AudioVerse-N0-READL',
-            description: { en: 'Open study area on the left wing.' },
-            x: 10, y: 160, w: 70, h: 320, busy: 'med', population: 20, 
-            doors: [{ id: 'd0-5', x: 35, y: 158, w: 20, h: 4 }]
+            id: 'n0-lounge-right', label: 'Læsepladser (Right)',
+            description: { en: 'Student reading area with the spiral staircase.' },
+            x: 305, y: 10, w: 145, h: 300, shapeClass: 'room-alt', busy: 'med', population: 20, 
+            doors: [{ id: 'd0-4', x: 303, y: 200, w: 4, h: 20 }]
           },
           {
-            id: 'n0-seminar', label: 'Seminarlokale & Læsepladser', beaconId: 'AudioVerse-N0-SEM',
-            description: { en: 'Ground floor seminar room and study area on the right wing.' },
-            x: 340, y: 160, w: 110, h: 320, busy: 'low', population: 15, 
-            doors: [{ id: 'd0-6', x: 338, y: 250, w: 4, h: 30 }]
+            id: 'n0-seminar', label: 'Seminarlokale',
+            description: { en: 'Ground floor seminar room.' },
+            x: 305, y: 320, w: 145, h: 70, shapeClass: 'room-main-shape', busy: 'low', population: 0, 
+            doors: [{ id: 'd0-5', x: 303, y: 345, w: 4, h: 20 }]
+          },
+          {
+            id: 'n0-vindfang', label: 'Vindfang (Entrance)',
+            description: { en: 'Main entrance vestibule. You are here!' },
+            x: 305, y: 400, w: 145, h: 80, shapeClass: 'room-alt', busy: 'high', population: 5, 
+            doors: [{ id: 'd0-6', x: 303, y: 430, w: 4, h: 20 }]
           }
         ]
       },
