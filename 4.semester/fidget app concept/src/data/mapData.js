@@ -11,9 +11,9 @@ export const museums = {
             id: 'vr_imagine', label: 'Imagine This (VR)',
             beaconId: 'AudioVerse-Room-VR',
             description: {
-              en: 'Step into a fully immersive virtual reality experience exploring the origins of the universe. Put on a headset and travel back 13.8 billion years.',
-              da: 'Træd ind i en fuldt fordybende VR-oplevelse om universets oprindelse. Sæt headsettet på og rejs 13,8 milliarder år tilbage i tiden.',
-              de: 'Tauchen Sie in ein vollständig immersives VR-Erlebnis ein, das die Entstehung des Universums erforscht. Setzen Sie ein Headset auf und reisen Sie 13,8 Milliarden Jahre zurück.'
+              en: 'Step into a fully immersive VR-experience exploring the wild worlds of nature. Put on a headset and get close to everything to the depths of the ocean to prehistorisk giants.',
+              da: 'Træd ind i en fuldt fordybende VR-oplevelse, hvor du kan udforske naturens vilde verdener. Tag headsettet på og kom helt tæt på alt, fra havets dyb til forhistoriske kæmper.',
+              de: 'Tauchen Sie ein in ein vollständig immersives VR-Erlebnis, in dem Sie die wilden Welten der Natur erkunden. Setzen Sie das Headset auf und kommen Sie allem ganz nah, von den Tiefen des Ozeans bis zu prähistorischen Giganten.'
             },
             x: 20, y: 20, w: 280, h: 160, shapeClass: 'room-main-shape',
             busy: 'med', trigger_warnings: ['Flashing lights (VR)', 'Motion sickness'],
@@ -29,9 +29,9 @@ export const museums = {
             id: 'future_human', label: 'Future Human Exhibit',
             beaconId: 'AudioVerse-Room-FH',
             description: {
-              en: 'What will humans look like in 200 years? This exhibition explores the ethics and science of genetic engineering, bionic implants, and human enhancement.',
-              da: 'Hvordan vil mennesker se ud om 200 år? Denne udstilling udforsker etikken og videnskaben bag genmanipulation, bioniske implantater og menneskelig forbedring.',
-              de: 'Wie werden Menschen in 200 Jahren aussehen? Diese Ausstellung beleuchtet Ethik und Wissenschaft der Gentechnik, bionischer Implantate und menschlicher Verbesserung.'
+              en: 'What will humans look like in 200 years? This exhibition explores the ethics and science of genetic engineering, bionic implants, and possible human enhancement.',
+              da: 'Hvordan vil mennesker se ud om 200 år? Denne udstilling udforsker etikken og videnskaben bag genmanipulation, bioniske implantater og mulige menneskelig forbedring.',
+              de: 'Wie werden Menschen in 200 Jahren aussehen? Diese Ausstellung beleuchtet Ethik und Wissenschaft der Gentechnik, bionischer Implantate und mögliche menschlicher verbesserung.'
             },
             x: 20, y: 20, w: 280, h: 160, shapeClass: 'room-main-shape',
             busy: 'high', trigger_warnings: ['Body modification themes', 'Bright screens'],
@@ -67,7 +67,7 @@ export const museums = {
             description: {
               en: 'Welcome to the Natural History Museum. Pick up your floor plan here and browse our gift shop featuring books, prints, and nature-inspired gifts.',
               da: 'Velkommen til Naturhistorisk Museum. Hent din etageplan her og se vores gavebutik med bøger, tryk og naturen-inspirerede gaver.',
-              de: 'Willkommen im Naturkundemuseum. Holen Sie sich hier Ihren Grundriss und stöbern Sie in unserem Museumsshop mit Büchern, Drucken und naturinspirierten Geschenken.'
+              de: 'Willkommen im Naturkundemuseum. Holen Sie sich hier Ihren Lageplan und stöbern Sie in unserem Museumsshop mit Büchern, Drucken und naturinspirierten Geschenken.'
             },
             x: 20, y: 20, w: 130, h: 160, shapeClass: 'room-main-shape',
             busy: 'low', trigger_warnings: [], population: 12,
@@ -79,8 +79,8 @@ export const museums = {
             beaconId: 'AudioVerse-Room-CAFE',
             description: {
               en: 'Refuel with organic coffee, fresh sandwiches, and seasonal specials. All ingredients are locally sourced where possible.',
-              da: 'Tank op med økologisk kaffe, friske sandwich og sæsonbetonede specialiteter. Alle ingredienser er lokalt indkøbt, hvor det er muligt.',
-              de: 'Stärken Sie sich mit Bio-Kaffee, frischen Sandwiches und saisonalen Spezialitäten. Alle Zutaten stammen, wo möglich, aus lokalem Anbau.'
+              da: 'Tank op med økologisk kaffe, friske sandwich og sæsonens specialiteter. Alle ingredienser er lokalt indkøbt, hvor det er muligt.',
+              de: 'Stärken Sie sich mit Bio-Kaffee, frischen Sandwiches und saisonalen Spezialitäten. Alle Zutaten stammen, wo möglich, aus der Region.'
             },
             x: 150, y: 20, w: 150, h: 75, shapeClass: 'room-alt',
             busy: 'low', trigger_warnings: [], population: 18,
@@ -93,7 +93,7 @@ export const museums = {
             description: {
               en: 'A 70-seat auditorium hosting live science demonstrations, documentary screenings, and family workshops throughout the day. Check the schedule at the entrance.',
               da: 'Et auditorium med 70 pladser med live videnskabsdemonstrationer, dokumentarvisninger og familieworkshops hele dagen. Tjek programmet ved indgangen.',
-              de: 'Ein Auditorium mit 70 Plätzen mit Live-Wissenschaftsvorführungen, Dokumentarfilmvorführungen und Familien-Workshops den ganzen Tag. Programm am Eingang.'
+              de: 'Ein 70-sitziges Auditorium mit Live-Vorführungen aus der Wissenschaft, Dokumentarfilmvorführungen und Familien-Workshops den ganzen Tag. Das Programm finden Sie am Eingang.'
             },
             x: 150, y: 105, w: 150, h: 75, shapeClass: 'room-theatre',
             busy: 'med', trigger_warnings: ['Dark room', 'Loud audio presentations'],
@@ -110,7 +110,7 @@ export const museums = {
             description: {
               en: 'Walk through a life-size recreation of the African savannah, complete with taxidermy wildlife, ambient soundscapes, and interactive habitat information panels.',
               da: 'Gå gennem en livsstørrelse-genskabelse af den afrikanske savanne med naturpræparater, omgivende lydscapes og interaktive informationstavler om levesteder.',
-              de: 'Durchwandern Sie eine lebensgroße Nachbildung der afrikanischen Savanne mit Tierpräparaten, Umgebungsgeräuschen und interaktiven Infotafeln zu Lebensräumen.'
+              de: 'Durchwandern Sie eine begehbare, lebensgroße Nachbildung der afrikanischen Savanne mit Tierpräparaten, atmosphärischen Klanglandschaften und interaktiven Infotafeln über Lebensräume.'
             },
             x: 20, y: 20, w: 130, h: 75, shapeClass: 'room-main-shape',
             busy: 'med', trigger_warnings: ['Animal sounds', 'Low lighting'],
@@ -121,9 +121,9 @@ export const museums = {
             id: 'our_nature', label: 'Our Nature',
             beaconId: 'AudioVerse-Room-B',    // ← your real beacon
             description: {
-              en: 'A hands-on exhibition celebrating Danish nature — from coastal dunes to ancient forests. Touch real specimens, listen to local birdsong, and explore seasonal ecosystems.',
-              da: 'En hands-on udstilling, der fejrer den danske natur — fra kystklitter til urskov. Rør ved ægte eksemplarer, lyt til lokal fuglesang og udforsk sæsonbestemte økosystemer.',
-              de: 'Eine interaktive Ausstellung über die dänische Natur — von Küstendünen bis zu Urwäldern. Berühren Sie echte Exemplare, hören Sie einheimische Vogelstimmen und erkunden Sie saisonale Ökosysteme.'
+              en: 'A hands-on exhibition celebrating Danish nature - From coastal dunes to ancient forests. Touch real specimens, listen to local birdsong, and explore seasonal ecosystems.',
+              da: 'En hands-on udstilling, der fejrer den danske natur - Fra kystklitter til urskov. Rør ved ægte eksemplarer, lyt til lokal fuglesang og udforsk sæsonbestemte økosystemer.',
+              de: 'Eine interaktive Ausstellung, die die dänische Natur feiert - Von Küstendünen bis Urwäldern. Berühren Sie echte Exemplare, hören Sie einheimische Vogelstimmen und erkunden Sie saisonale Ökosysteme.'
             },
             x: 20, y: 105, w: 130, h: 75, shapeClass: 'room-alt',
             busy: 'high', trigger_warnings: [],
@@ -134,9 +134,9 @@ export const museums = {
             id: 'lunch_play', label: 'Lunch & Play Room',
             beaconId: 'AudioVerse-Room-LP',
             description: {
-              en: 'A family-friendly space where children can play with nature-themed building sets and puzzles while adults relax with a packed lunch or snack from the vending area.',
-              da: 'Et familievenligt rum, hvor børn kan lege med naturinspirerede byggesæt og puslespil, mens voksne slapper af med en madpakke eller en snack fra automaten.',
-              de: 'Ein familienfreundlicher Raum, in dem Kinder mit naturthematischen Bausätzen und Puzzles spielen können, während Erwachsene mit einem Lunchpaket oder Snack entspannen.'
+              en: 'A family-friendly space where children can play with nature-themed building-sets and puzzles while adults relax with a packed lunch.',
+              da: 'Et familievenligt rum, hvor børn kan lege med naturinspirerede byggesæt og puslespil, mens voksne slapper af med en madpakke.',
+              de: 'Ein familienfreundlicher Raum, in dem Kinder mit naturbezogenen Bausätzen und Puzzles spielen können, während Erwachsene sich mit einem mitgebrachte Mahlzeit entspannen.'
             },
             x: 170, y: 20, w: 130, h: 105, shapeClass: 'room-main-shape',
             busy: 'high', trigger_warnings: ['Noisy (children playing)', 'Food smells'],
@@ -147,9 +147,9 @@ export const museums = {
             id: 'wardrobe_wc', label: 'Wardrobes & Toilets',
             beaconId: 'AudioVerse-Room-WC',
             description: {
-              en: 'Cloakroom storage, accessible toilets, and baby-changing facilities. Locker hire available at the front desk.',
-              da: 'Garderobeopbevaring, handicaptoiletter og puslepladser. Skabsleje tilgængelig ved receptionen.',
-              de: 'Garderobenaufbewahrung, barrierefreie Toiletten und Wickelmöglichkeiten. Schließfachmiete an der Rezeption erhältlich.'
+              en: 'Cloakroom storage, accessible toilets, and baby-changing facilities.',
+              da: 'Garderobeopbevaring, handicaptoiletter og puslepladser.',
+              de: 'Garderobenbereich, barrierefreie Toiletten und Wickelmöglichkeiten.'
             },
             x: 170, y: 135, w: 130, h: 45, shapeClass: 'room-alt',
             busy: 'low', trigger_warnings: [],
@@ -174,7 +174,7 @@ export const museums = {
             description: {
               en: 'Olafur Eliasson\'s iconic circular walkway wraps the entire rooftop in a spectrum of coloured glass, transforming the city of Aarhus into a living painting 360° around you.',
               da: 'Olafur Eliassons ikoniske cirkulære gangbro indhyller hele taget i et spektrum af farvet glas og forvandler Aarhus til et levende maleri 360° rundt om dig.',
-              de: 'Olafur Eliassons ikonischer kreisförmiger Gehweg umhüllt das gesamte Dach mit einem Spektrum farbiger Glasscheiben und verwandelt die Stadt Aarhus in ein lebendiges Gemälde rund um Sie herum.'
+              de: 'Olafur Eliassons ikonischer Rundgang umschließt das gesamte Dach mit einem Spektrum farbigen Glases und verwandelt die Stadt Aarhus in ein lebendiges Gemälde 360° um Sie herum.'
             },
             x: 20, y: 60, w: 280, h: 80,
             busy: 'high', population: 85,
@@ -193,7 +193,7 @@ export const museums = {
             description: {
               en: 'The ARoS entrance soars nine stories through the building\'s core. Collect your tickets, audio guides, and floor plans here before ascending through the collection.',
               da: 'ARoS\' indgang strækker sig ni etager gennem bygningens kerne. Hent dine billetter, lydguider og etageplan her, inden du stiger op gennem samlingen.',
-              de: 'Der ARoS-Eingang erstreckt sich neun Stockwerke durch den Kern des Gebäudes. Holen Sie hier Ihre Tickets, Audioguides und Grundrisse, bevor Sie durch die Sammlung aufsteigen.'
+              de: 'Der ARoS-Eingang erstreckt sich über neun Stockwerke durch das Herz des Gebäudes. Hier erhalten Sie Ihre Tickets, Audioguides und Lagepläne, bevor Sie durch die Ausstellungen nach oben gehen.'
             },
             x: 80, y: 20, w: 160, h: 60,
             busy: 'med', population: 42,
@@ -224,7 +224,7 @@ export const museums = {
             description: {
               en: 'These two interconnected galleries house rotating exhibitions from ARoS\'s permanent collection, spanning Danish Golden Age paintings to post-war international modernism.',
               da: 'Disse to forbundne gallerier huser skiftende udstillinger fra ARoS\' permanente samling, der spænder fra dansk guldaldermaleri til efterkrigsinternational modernisme.',
-              de: 'Diese zwei miteinander verbundenen Galerien beherbergen wechselnde Ausstellungen aus der Dauersammlung von ARoS, von dänischen Goldenen Zeitalter-Gemälden bis zur internationalen Nachkriegsmoderne.'
+              de: 'Diese beiden miteinander verbundenen Galerien zeigen wechselnde Ausstellungen aus der Dauersammlung von ARoS – von Gemälden des dänischen Goldenen Zeitalters bis zur internationalen Nachkriegsmoderne.'
             },
             x: 130, y: 10, w: 60, h: 90,
             busy: 'low', population: 15,
@@ -237,7 +237,7 @@ export const museums = {
             description: {
               en: 'Descended beneath street level, the Dome is a circular chamber of total darkness. James Turrell\'s light works transform the space — your eyes adjust slowly, revealing forms that seem to breathe.',
               da: 'Under gadeniveau er Kuppelen et cirkulært kammer i totalt mørke. James Turrells lysværker forvandler rummet — dine øjne vænner sig langsomt til det og afslører former, der synes at ånde.',
-              de: 'Unterhalb des Straßenniveaus ist die Kuppel eine kreisförmige Kammer in völliger Dunkelheit. James Turrells Lichtwerke verwandeln den Raum — Ihre Augen passen sich langsam an und enthüllen Formen, die zu atmen scheinen.'
+              de: 'Unterhalb des Straßenniveaus liegt die Kuppel, eine kreisförmige Kammer in völliger Dunkelheit. James Turrells Lichtwerke verwandeln den Raum — Ihre Augen passen sich langsam an und enthüllen Formen, die zu atmen scheinen.'
             },
             x: 90, y: 104, w: 140, h: 86,
             busy: 'low', population: 8,
