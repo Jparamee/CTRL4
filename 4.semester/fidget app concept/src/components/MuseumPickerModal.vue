@@ -19,7 +19,8 @@
         </svg>
         <input 
           ref="searchInput"
-          v-model="query"
+          :value="query"
+          @input="query = $event.target.value"
           class="search-input"
           type="text"
           placeholder="Search museums..."
