@@ -56,11 +56,17 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+// 1. ADD 'reactive' to the end of this line
+import { ref, computed, watch, onMounted, onUnmounted, reactive } from 'vue'
 import { Geolocation } from '@capacitor/geolocation'
 import { BleClient } from '@capacitor-community/bluetooth-le'
-import { museums } from './data/mapData.js'
+
+// 2. RENAME the import to rawMuseums
+import { museums as rawMuseums } from './data/mapData.js'
 import { changeRoomTheme } from './audioStore.js'
+
+// 3. WRAP it in reactive so Vue updates the map colors instantly
+const museums = reactive(rawMuseums)
 
 import AppHeader             from './components/AppHeader.vue'
 import AudioSettings         from './components/AudioSettings.vue'
@@ -70,26 +76,27 @@ import BottomDock            from './components/BottomDock.vue'
 import WelcomeModal          from './components/WelcomeModal.vue'
 import LocationPermissionModal from './components/LocationPermissionModal.vue'
 import MuseumPickerModal     from './components/MuseumPickerModal.vue'
-
 // ─────────────────────────────────────────────────────────────
 //  UI STATE
 // ─────────────────────────────────────────────────────────────
 const activeTab   = ref('map')
 const modalActive = ref(false)
-const selectedRoom = ref(null)
 
-const darkMode = ref(localStorage.getItem('av_dark_mode') === 'true')
-watch(darkMode, (isDark) => {
-  localStorage.setItem('av_dark_mode', isDark)
-  if (isDark) document.documentElement.classList.add('dark')
-  else        document.documentElement.classList.remove('dark')
-}, { immediate: true })
+// CHANGE: We now store the ID of the selected room instead of the whole object
+const selectedRoomId = ref(null)
 
-const showWelcome = ref(localStorage.getItem('av_hide_welcome') !== 'true')
-function dismissWelcome() {
-  showWelcome.value = false
-  localStorage.setItem('av_hide_welcome', 'true')
-}
+// NEW: This computed property always finds the LIVE room data from our reactive 'museums' object
+const selectedRoom = computed(() => {
+  if (!selectedRoomId.value) return null
+  
+  // Find the room in our flat beaconMap (which points to the reactive museum objects)
+  for (const entry of beaconMap.values()) {
+    if (entry.room.id === selectedRoomId.value) {
+      return entry.room
+    }
+  }
+  return null
+})
 
 // ─────────────────────────────────────────────────────────────
 //  MUSEUM STATE
@@ -146,6 +153,47 @@ function buildBeaconMap() {
 
 const beaconMap = buildBeaconMap()
 
+// ─────────────────────────────────────────────────────────────
+//  LIVE API FETCHING (GLOBAL CLOUD VERSION)
+// ─────────────────────────────────────────────────────────────
+async function fetchLiveCrowdData() {
+  try {
+    const supabaseUrl = 'https://mdjgwhnhugpiuxbkywrp.supabase.co/rest/v1/rooms';
+    const supabaseKey = 'sb_publishable_0fYKMBrC7NiJRV-ei28jfA_j4upaf4n';
+
+    // Fetch the data from the cloud using your keys
+    const response = await fetch(supabaseUrl, {
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`
+      }
+    });
+
+    // Supabase returns an array of rows: [ { beacon_id: '...', population: 42 } ]
+    const liveData = await response.json();
+
+    // Loop through the cloud data and update our map!
+    for (const row of liveData) {
+      const entry = beaconMap.get(row.beacon_id);
+      
+      if (entry && entry.room) {
+        // 1. Update the raw population number
+        entry.room.population = row.population;
+
+        // 2. Dynamically calculate the busy status to update the colors
+        if (row.population < 15) {
+          entry.room.busy = 'low';
+        } else if (row.population <= 40) {
+          entry.room.busy = 'med';
+        } else {
+          entry.room.busy = 'high';
+        }
+      }
+    }
+  } catch (error) {
+    console.warn("[API] Could not reach Supabase.", error);
+  }
+}
 // ─────────────────────────────────────────────────────────────
 //  BLE SCANNING
 //
@@ -372,6 +420,9 @@ async function startTracking() {
 onMounted(async () => {
   await startTracking()
   await startBleScan()
+
+  // Start polling the API every 3 seconds for live crowd updates!
+  setInterval(fetchLiveCrowdData, 3000)
 })
 
 onUnmounted(() => {
@@ -385,17 +436,17 @@ onUnmounted(() => {
 function switchTab(tabName) { activeTab.value = tabName; closeModal() }
 
 function openModal(roomData) {
-  selectedRoom.value = roomData
-  modalActive.value  = true
-  // Manual tap on a room → also switch the theme music
+  selectedRoomId.value = roomData.id // Store the ID
+  modalActive.value    = true
+  
   if (roomData.themeAudio) {
     changeRoomTheme(roomData.themeAudio, roomData.label)
   }
 }
 
 function closeModal() {
-  modalActive.value  = false
-  selectedRoom.value = null
+  modalActive.value    = false
+  selectedRoomId.value = null // Clear the ID
 }
 </script>
 
