@@ -76,6 +76,21 @@ import BottomDock            from './components/BottomDock.vue'
 import WelcomeModal          from './components/WelcomeModal.vue'
 import LocationPermissionModal from './components/LocationPermissionModal.vue'
 import MuseumPickerModal     from './components/MuseumPickerModal.vue'
+
+
+
+
+// At the top of <script setup>, replace the serial variables and functions with:
+import { useFidgetConnection } from './components/useFidgetConnection.js'
+
+const { isConnected, isConnecting, connectionType, connect, disconnect } = useFidgetConnection()
+
+// Remove: serialPort, reader, inputDone, keepReading, connectToFidgetToy, disconnectFromFidgetToy
+// Remove: window.connectToFidgetToy = connectToFidgetToy
+
+
+
+
 // ─────────────────────────────────────────────────────────────
 //  UI STATE
 // ─────────────────────────────────────────────────────────────

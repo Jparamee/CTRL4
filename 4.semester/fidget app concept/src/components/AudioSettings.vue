@@ -1,6 +1,21 @@
 <template>
   <div class="settings-container">
 
+    <!-- NEW: Fidget Toy Test Connection Button -->
+    <div class="fidget-connect-row">
+      <button 
+        class="fidget-btn" 
+        :class="{ 'connected': isConnected }"
+        @click="isConnected ? disconnect() : connect()"
+        :disabled="isConnecting"
+      >
+        <span v-if="isConnecting">Connecting...</span>
+        <span v-else-if="isConnected">🟢 Connected</span>
+        <span v-else>🔌 Connect Fidget Toy</span>
+      </button>
+    </div>
+    <!-- END NEW -->
+
     <div class="toggles-row">
       <div class="toggle-card">
         <div class="icon-wrap">
@@ -93,6 +108,10 @@
 import { ref, watch } from 'vue'
 import { themeVolume, voiceVolume } from '../audioStore.js'
 import { t } from '../langStore.js'
+import { useFidgetConnection } from './useFidgetConnection.js'
+
+// Destructure the functions
+const { isConnected, isConnecting, connect, disconnect } = useFidgetConnection()
 
 const noiseSuppression = ref(localStorage.getItem('av_noise') !== 'false')
 const crowdWarning     = ref(localStorage.getItem('av_crowd') !== 'false')
@@ -140,4 +159,67 @@ watch(crowdWarning,     (val) => localStorage.setItem('av_crowd', val))
 .thumb  { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: #fff; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: transform 0.3s cubic-bezier(.4,0,.2,1); }
 .toggle input:checked + .track          { background: var(--primary); }
 .toggle input:checked + .track .thumb  { transform: translateX(18px); }
+
+/* ── Fidget Connect Button ───────────────────────────────── */
+.fidget-connect-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.fidget-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border); /* Subtle grey outline */
+  background: var(--surface);      /* White background */
+  color: var(--text-main);         /* Main text color */
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;                /* Slightly lighter weight */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04); /* Very subtle shadow */
+}
+
+/* Hover state: slightly lift and darken border */
+.fidget-btn:hover:not(:disabled) {
+  background: var(--bg-color);     /* Light grey bg on hover */
+  border-color: var(--primary);    /* Highlight border */
+  color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+}
+
+/* Active state: press down */
+.fidget-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.fidget-btn.connected {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-light); /* Very light green bg */
+}
+
+.fidget-btn.connected:hover:not(:disabled) {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* Disabled state */
+.fidget-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--bg-color);
+  color: var(--text-muted);
+  border-color: var(--border);
+  box-shadow: none;
+}
+
 </style>
