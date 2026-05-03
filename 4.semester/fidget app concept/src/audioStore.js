@@ -39,7 +39,7 @@ watch(playbackSpeed, (v) => localStorage.setItem('av_speed', v))
 // ─────────────────────────────────────────────
 function getGuideFile(lang) {
   if (lang === 'da') return 'audio/christianSnakkerSort.mp3'
-  if (lang === 'de') return 'audio/deutsch Hyänen speak.mp3'
+  if (lang === 'de') return 'audio/deutsch Hyänen speak.wav'
   return 'audio/english hyena speak.mp3'
 }
 
@@ -79,7 +79,8 @@ watch(guideLang, (newLang) => {
   guideTrack.load()
 
   guideTrack.addEventListener('loadedmetadata', () => {
-    guideTrack.currentTime = Math.min(savedTime, guideTrack.duration)
+    guideTrack.playbackRate = playbackSpeed.value  // re-apply — load() resets it on Safari/WebKit
+    guideTrack.currentTime  = Math.min(savedTime, guideTrack.duration)
     if (wasPlaying) {
       guideTrack.play()
         .then(() => { guideIsPlaying.value = true })
@@ -114,6 +115,24 @@ if (savedRoomName) currentRoomName.value = savedRoomName
 
 let isFading     = false
 let fadeInterval = null
+
+// ─────────────────────────────────────────────
+//  TAB VISIBILITY  (fix: browser throttles
+//  setInterval in hidden tabs, breaking fades)
+// ─────────────────────────────────────────────
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (isFading) {
+      clearInterval(fadeInterval)
+      isFading = false
+      themeTrack.volume = themeVolume.value / 100
+    }
+  } else {
+    if (!isFading) {
+      themeTrack.volume = themeIsPlaying.value ? themeVolume.value / 100 : 0
+    }
+  }
+})
 
 // ─────────────────────────────────────────────
 //  WATCHERS: Volume / Speed sliders → Audio API

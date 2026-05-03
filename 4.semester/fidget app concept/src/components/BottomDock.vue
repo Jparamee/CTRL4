@@ -45,9 +45,8 @@
           <!-- Music play/pause pill -->
           <button
             class="ambient-toggle"
-            :class="{ playing: themeIsPlaying, disabled: !currentRoomName }"
+            :class="{ playing: themeIsPlaying }"
             @click.stop="toggleTheme"
-            :disabled="!currentRoomName"
             :title="themeIsPlaying
               ? t('Pause music', 'Pause musik', 'Musik pausieren')
               : t('Play music', 'Afspil musik', 'Musik abspielen')"
@@ -525,7 +524,7 @@ function resumeAfterSeek() { if (wasPlayingBefore && !guideIsPlaying.value) togg
   transition: all 0.2s ease;
 }
 .ambient-toggle.playing { background: var(--primary); color: #fff; }
-.ambient-toggle.disabled { opacity: 0.35; cursor: not-allowed; border-color: var(--border); color: var(--text-muted); }
+
 .ambient-toggle:not(.disabled):hover { transform: scale(1.08); }
 
 /* Animated bars (when theme is playing) */

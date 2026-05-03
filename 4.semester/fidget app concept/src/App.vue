@@ -76,26 +76,27 @@ import BottomDock            from './components/BottomDock.vue'
 import WelcomeModal          from './components/WelcomeModal.vue'
 import LocationPermissionModal from './components/LocationPermissionModal.vue'
 import MuseumPickerModal     from './components/MuseumPickerModal.vue'
-
-
-
-
-// At the top of <script setup>, replace the serial variables and functions with:
-import { useFidgetConnection } from './components/useFidgetConnection.js'
-
-const { isConnected, isConnecting, connectionType, connect, disconnect } = useFidgetConnection()
-
-// Remove: serialPort, reader, inputDone, keepReading, connectToFidgetToy, disconnectFromFidgetToy
-// Remove: window.connectToFidgetToy = connectToFidgetToy
-
-
-
-
 // ─────────────────────────────────────────────────────────────
 //  UI STATE
 // ─────────────────────────────────────────────────────────────
 const activeTab   = ref('map')
 const modalActive = ref(false)
+
+// Dark mode — persisted in localStorage, defaults to dark
+const darkMode = ref(localStorage.getItem('av_dark') !== null
+  ? localStorage.getItem('av_dark') === 'true'
+  : true   // ← change to false if you want light as the default
+)
+
+// Keep <html> class in sync so `html.dark body {}` rules apply correctly
+function applyDarkClass(val) {
+  document.documentElement.classList.toggle('dark', val)
+}
+applyDarkClass(darkMode.value)  // apply immediately on load — prevents flash
+watch(darkMode, (val) => {
+  localStorage.setItem('av_dark', val)
+  applyDarkClass(val)
+})
 
 // CHANGE: We now store the ID of the selected room instead of the whole object
 const selectedRoomId = ref(null)
