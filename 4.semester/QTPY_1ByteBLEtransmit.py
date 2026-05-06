@@ -13,17 +13,13 @@ from adafruit_ble.uuid import VendorUUID
 LEFT_BUTTON_PIN = board.A0
 RIGHT_BUTTON_PIN = board.A2
 
-# OLD VALS
-#LEFT_THRESHOLD = 2500
-#RIGHT_THRESHOLD = 200
-
 # NEW CALLIBRATED VALS
-LEFT_THRESHOLD = 10
-RIGHT_THRESHOLD = 10
+LEFT_THRESHOLD = 2700
+RIGHT_THRESHOLD = 160
 
 
 SAMPLE_SIZE = 10
-DEBOUNCE_DELAY = 0.3
+DEBOUNCE_DELAY = 0.15
 
 # --- BLE UUIDs ---
 SERVICE_UUID = "be83ebca-a930-4d57-a57d-784d322198cd"
@@ -73,6 +69,11 @@ right_pressed = False
 left_press_start = 0
 right_press_start = 0
 
+# NEW: Cooldown timer to prevent rapid toggling
+last_left_action_time = 0
+last_right_action_time = 0
+COOLDOWN_TIME = 1.2  # Seconds to wait between actions (adjust as needed)
+
 def get_smoothed_value(pin, buffer, idx):
     new_val = pin.value
     buffer[idx] = new_val
@@ -109,7 +110,7 @@ def send_button_command(command):
             print(f"BLE error: {e}")
 
 def main():
-    global left_pressed, right_pressed, left_press_start, right_press_start, left_idx, right_idx
+    global left_pressed, right_pressed, left_press_start, right_press_start, left_idx, right_idx, last_left_action_time, last_right_action_time
 
     print("--- Ready: Press a button ---")
 
@@ -124,9 +125,16 @@ def main():
             if not left_pressed:
                 left_press_start = current_time
                 left_pressed = True
+
+            # Check if held long enough AND cooldown has passed
             if (current_time - left_press_start) > DEBOUNCE_DELAY:
-                send_button_command("left")
-                trigger_haptic()
+                # Check cooldown
+                if (current_time - last_left_action_time) > COOLDOWN_TIME:
+                    send_button_command("left")
+                    trigger_haptic()
+                    last_left_action_time = current_time  # Reset cooldown
+
+                # Reset press state to allow re-triggering after release
                 left_pressed = False
                 left_press_start = 0
         else:
@@ -138,16 +146,23 @@ def main():
             if not right_pressed:
                 right_press_start = current_time
                 right_pressed = True
+
+            # Check if held long enough AND cooldown has passed
             if (current_time - right_press_start) > DEBOUNCE_DELAY:
-                send_button_command("right")
-                trigger_haptic()
+                # Check cooldown
+                if (current_time - last_right_action_time) > COOLDOWN_TIME:
+                    send_button_command("right")
+                    trigger_haptic()
+                    last_right_action_time = current_time  # Reset cooldown
+
+                # Reset press state
                 right_pressed = False
                 right_press_start = 0
         else:
             right_pressed = False
             right_press_start = 0
 
-        time.sleep(0.02)
+        time.sleep(0.01)
 
 if __name__ == "__main__":
     main()
